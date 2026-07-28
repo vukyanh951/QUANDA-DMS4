@@ -1,0 +1,215 @@
+import {
+  calculateAvailableMinutes,
+  getDaysRemaining,
+  getFeasibilityMessage,
+  getFeasibilityStatus,
+} from "@/src/lib/feasibility";
+import type {
+  Locale,
+  RoadmapRequest,
+  RoadmapResponse,
+  RoadmapStage,
+} from "@/src/types";
+import { fillTutorialIds } from "@/src/lib/tutorialMatcher";
+
+type SampleKind = "blender" | "figma" | "davinci";
+
+const stages: Record<SampleKind, Record<Locale, RoadmapStage[]>> = {
+  blender: {
+    en: [
+      stage("brief", 1, "Lock the story and deliverable", "Define the product, message, and 20-second shot list.", "A short plan prevents expensive changes after modelling starts.", null, "Reference selection and shot planning", ["Write a one-sentence product message", "Collect 6–10 visual references", "Sketch a three-shot sequence"], 30, 60),
+      stage("basics", 2, "Learn Blender essentials", "Navigate, transform objects, and manage a simple scene.", "Basic fluency makes every later production step faster.", "blender", "Viewport navigation and object transforms", ["Complete a focused navigation exercise", "Practise move, rotate, scale, and duplicate", "Save a clean starter scene"], 90, 45, ["brief"]),
+      stage("model", 3, "Model the product", "Build a recognisable product using clean, simple geometry.", "The model is the visual foundation for lighting and animation.", "blender", "Hard-surface modelling with simple geometry", ["Block the main silhouette", "Add secondary details", "Check proportions from camera view"], 75, 180, ["basics"]),
+      stage("materials", 4, "Create materials", "Give the product clear surfaces and brand colours.", "Material contrast helps the product read quickly on screen.", "blender", "Principled materials and basic texture setup", ["Create 2–4 reusable materials", "Apply label or logo artwork", "Test roughness under neutral light"], 60, 120, ["model"]),
+      stage("camera", 5, "Light and frame the scene", "Create a simple studio setup and final camera angles.", "Good framing and light can make simple geometry feel intentional.", "blender", "Three-point lighting and camera composition", ["Set a 1080p camera", "Build a key, fill, and rim setup", "Save one approved look frame"], 60, 120, ["materials"]),
+      stage("animate", 6, "Animate the product", "Build a readable 20-second product and camera movement.", "Timing turns still assets into a coherent visual story.", "blender", "Keyframes, easing, and camera animation", ["Block key poses first", "Refine easing in the graph editor", "Create a low-resolution preview"], 75, 180, ["camera"]),
+      stage("render", 7, "Render safely", "Export an image sequence with practical quality settings.", "An image sequence is easier to recover if rendering is interrupted.", "blender", "Render settings and image-sequence workflow", ["Run a five-frame render test", "Choose a feasible sample count", "Render numbered PNG frames"], 35, 120, ["animate"]),
+      stage("finish", 8, "Add sound and export", "Edit the sequence, add simple audio, and deliver a 1080p MP4.", "A final edit makes timing, sound, and submission settings consistent.", "davinci-resolve", "Timeline editing and H.264 delivery", ["Import the image sequence", "Add permitted music or sound effects", "Export and watch the final MP4 end to end"], 45, 120, ["render"]),
+    ],
+    vi: [
+      stage("brief", 1, "Chốt câu chuyện và đầu ra", "Xác định sản phẩm, thông điệp và danh sách cảnh cho video 20 giây.", "Kế hoạch ngắn giúp tránh thay đổi tốn thời gian sau khi bắt đầu dựng hình.", null, "Chọn tham chiếu và lập kế hoạch cảnh", ["Viết thông điệp sản phẩm trong một câu", "Thu thập 6–10 hình tham chiếu", "Phác thảo chuỗi ba cảnh"], 30, 60),
+      stage("basics", 2, "Học nền tảng Blender", "Di chuyển trong viewport, biến đổi vật thể và quản lý scene đơn giản.", "Thao tác cơ bản thành thạo giúp mọi bước sau nhanh hơn.", "blender", "Điều hướng viewport và transform vật thể", ["Hoàn thành bài tập điều hướng ngắn", "Luyện move, rotate, scale và duplicate", "Lưu scene khởi đầu sạch"], 90, 45, ["brief"]),
+      stage("model", 3, "Dựng mô hình sản phẩm", "Tạo sản phẩm dễ nhận biết bằng hình khối đơn giản, gọn gàng.", "Mô hình là nền tảng hình ảnh cho ánh sáng và animation.", "blender", "Dựng hard-surface bằng hình học đơn giản", ["Chặn hình khối chính", "Thêm chi tiết phụ", "Kiểm tra tỷ lệ từ góc camera"], 75, 180, ["basics"]),
+      stage("materials", 4, "Tạo material", "Thiết lập bề mặt rõ ràng và màu thương hiệu cho sản phẩm.", "Độ tương phản material giúp sản phẩm dễ đọc trong thời gian ngắn.", "blender", "Principled material và texture cơ bản", ["Tạo 2–4 material tái sử dụng", "Áp nhãn hoặc logo", "Kiểm tra roughness dưới ánh sáng trung tính"], 60, 120, ["model"]),
+      stage("camera", 5, "Thiết lập ánh sáng và khung hình", "Tạo studio đơn giản và chốt góc camera.", "Khung hình và ánh sáng tốt giúp hình khối đơn giản trông có chủ đích.", "blender", "Ánh sáng ba điểm và bố cục camera", ["Đặt camera 1080p", "Tạo key, fill và rim light", "Lưu một look frame đã duyệt"], 60, 120, ["materials"]),
+      stage("animate", 6, "Animate sản phẩm", "Tạo chuyển động sản phẩm và camera rõ ràng trong 20 giây.", "Nhịp chuyển động biến asset tĩnh thành câu chuyện hình ảnh mạch lạc.", "blender", "Keyframe, easing và camera animation", ["Chặn key pose trước", "Tinh chỉnh easing trong graph editor", "Tạo preview độ phân giải thấp"], 75, 180, ["camera"]),
+      stage("render", 7, "Render an toàn", "Xuất image sequence với thiết lập chất lượng thực tế.", "Image sequence dễ phục hồi hơn nếu quá trình render bị gián đoạn.", "blender", "Thiết lập render và quy trình image sequence", ["Render thử năm frame", "Chọn số sample phù hợp", "Render chuỗi PNG có đánh số"], 35, 120, ["animate"]),
+      stage("finish", 8, "Thêm âm thanh và xuất file", "Dựng chuỗi ảnh, thêm âm thanh đơn giản và xuất MP4 1080p.", "Bước dựng cuối thống nhất nhịp, âm thanh và cài đặt nộp bài.", "davinci-resolve", "Dựng timeline và xuất H.264", ["Nhập image sequence", "Thêm nhạc hoặc hiệu ứng âm thanh được phép", "Xuất và xem lại toàn bộ MP4"], 45, 120, ["render"]),
+    ],
+  },
+  figma: {
+    en: [
+      stage("scope", 1, "Define the prototype scope", "Choose one core user journey and success criterion.", "A narrow journey keeps the prototype testable and achievable.", "figma", "User-flow scoping", ["Write the user goal", "Map 5–7 key screens", "List required content"], 35, 60),
+      stage("wireframe", 2, "Wireframe the core flow", "Create low-fidelity layouts for every key screen.", "Wireframes reveal flow problems before visual polish.", "figma", "Frames, auto layout, and low-fidelity UI", ["Build mobile frames", "Place content hierarchy", "Connect the first click-through"], 75, 150, ["scope"]),
+      stage("system", 3, "Create a small UI system", "Define reusable type, colour, spacing, and controls.", "A compact system makes the interface consistent without over-designing.", "figma", "Components, styles, and variants", ["Create type and colour styles", "Build button and input components", "Check colour contrast"], 90, 150, ["wireframe"]),
+      stage("polish", 4, "Design final screens", "Apply the visual system to the complete core journey.", "High-fidelity screens make feedback more specific and useful.", "figma", "Responsive layout and visual hierarchy", ["Finish all core screens", "Use realistic content", "Review spacing and states"], 45, 180, ["system"]),
+      stage("prototype", 5, "Build and test the prototype", "Create interactions, test the flow, and prepare a share link.", "A tested prototype demonstrates the experience rather than isolated screens.", "figma", "Prototype interactions and usability checks", ["Add navigation and overlays", "Run two task-based tests", "Fix blockers and present the final flow"], 60, 150, ["polish"]),
+    ],
+    vi: [
+      stage("scope", 1, "Xác định phạm vi prototype", "Chọn một hành trình người dùng cốt lõi và tiêu chí thành công.", "Hành trình gọn giúp prototype dễ kiểm thử và khả thi.", "figma", "Thu gọn user flow", ["Viết mục tiêu người dùng", "Lập sơ đồ 5–7 màn hình chính", "Liệt kê nội dung bắt buộc"], 35, 60),
+      stage("wireframe", 2, "Tạo wireframe cho luồng chính", "Dựng layout low-fidelity cho mọi màn hình quan trọng.", "Wireframe phát hiện vấn đề về luồng trước khi trau chuốt hình ảnh.", "figma", "Frame, auto layout và UI low-fidelity", ["Tạo frame mobile", "Sắp xếp thứ bậc nội dung", "Nối click-through đầu tiên"], 75, 150, ["scope"]),
+      stage("system", 3, "Tạo hệ thống UI nhỏ", "Định nghĩa typography, màu, khoảng cách và control tái sử dụng.", "Hệ thống gọn giúp giao diện nhất quán mà không thiết kế quá mức.", "figma", "Component, style và variant", ["Tạo style chữ và màu", "Dựng component button và input", "Kiểm tra độ tương phản màu"], 90, 150, ["wireframe"]),
+      stage("polish", 4, "Thiết kế màn hình hoàn chỉnh", "Áp dụng hệ thống hình ảnh cho toàn bộ hành trình chính.", "Màn hình high-fidelity giúp phản hồi cụ thể và hữu ích hơn.", "figma", "Layout responsive và thứ bậc hình ảnh", ["Hoàn thiện các màn hình chính", "Dùng nội dung thực tế", "Kiểm tra khoảng cách và trạng thái"], 45, 180, ["system"]),
+      stage("prototype", 5, "Tạo và kiểm thử prototype", "Thêm tương tác, kiểm thử luồng và chuẩn bị link chia sẻ.", "Prototype đã kiểm thử thể hiện trải nghiệm thay vì các màn hình rời rạc.", "figma", "Tương tác prototype và kiểm tra usability", ["Thêm navigation và overlay", "Chạy hai bài test theo nhiệm vụ", "Sửa điểm nghẽn và trình bày luồng cuối"], 60, 150, ["polish"]),
+    ],
+  },
+  davinci: {
+    en: [
+      stage("organise", 1, "Organise footage and story", "Audit clips and build a simple beginning, middle, and end.", "Good organisation protects editing time and story clarity.", "davinci-resolve", "Media organisation and selects", ["Back up original files", "Create labelled bins", "Mark the strongest moments"], 35, 75),
+      stage("rough", 2, "Build the rough cut", "Create a complete, watchable version without polishing.", "A full rough cut reveals pacing and missing material early.", "davinci-resolve", "Timeline editing and trimming", ["Assemble the story", "Trim pauses and repetition", "Add temporary music"], 60, 180, ["organise"]),
+      stage("sound", 3, "Clean dialogue and sound", "Make speech clear and balance the main audio elements.", "Viewers forgive imperfect images sooner than unclear audio.", "davinci-resolve", "Audio levels, fades, and basic cleanup", ["Set consistent dialogue levels", "Remove distracting noise where possible", "Add fades and room tone"], 60, 120, ["rough"]),
+      stage("colour", 4, "Correct colour and titles", "Balance shots and add restrained titles.", "Consistency creates a finished look without unnecessary effects.", "davinci-resolve", "Primary colour correction and titles", ["Balance exposure and white balance", "Match adjacent shots", "Add readable opening and closing titles"], 75, 135, ["rough"]),
+      stage("deliver", 5, "Review and export", "Run a quality check and export the required delivery file.", "A deliberate review catches technical errors before submission.", "davinci-resolve", "Delivery settings and quality control", ["Watch the full timeline", "Check spelling and audio peaks", "Export H.264 and verify the file"], 30, 75, ["sound", "colour"]),
+    ],
+    vi: [
+      stage("organise", 1, "Sắp xếp footage và câu chuyện", "Kiểm tra clip và dựng cấu trúc mở đầu, phát triển, kết thúc đơn giản.", "Tổ chức tốt bảo vệ thời gian dựng và độ rõ của câu chuyện.", "davinci-resolve", "Quản lý media và chọn take", ["Sao lưu file gốc", "Tạo bin có nhãn rõ ràng", "Đánh dấu khoảnh khắc tốt nhất"], 35, 75),
+      stage("rough", 2, "Dựng rough cut", "Tạo phiên bản hoàn chỉnh có thể xem trước khi trau chuốt.", "Rough cut đầy đủ cho thấy sớm vấn đề về nhịp và nội dung thiếu.", "davinci-resolve", "Dựng timeline và cắt chỉnh", ["Ghép câu chuyện", "Cắt khoảng dừng và phần lặp", "Thêm nhạc tạm"], 60, 180, ["organise"]),
+      stage("sound", 3, "Làm sạch thoại và âm thanh", "Làm thoại rõ và cân bằng các thành phần âm thanh chính.", "Người xem thường chấp nhận hình chưa hoàn hảo hơn là âm thanh khó nghe.", "davinci-resolve", "Mức âm lượng, fade và làm sạch cơ bản", ["Đặt mức thoại nhất quán", "Giảm tiếng ồn gây xao nhãng khi có thể", "Thêm fade và room tone"], 60, 120, ["rough"]),
+      stage("colour", 4, "Chỉnh màu và title", "Cân bằng các shot và thêm title tiết chế.", "Sự nhất quán tạo cảm giác hoàn thiện mà không cần hiệu ứng thừa.", "davinci-resolve", "Chỉnh màu cơ bản và title", ["Cân bằng exposure và white balance", "Match các shot liền kề", "Thêm title mở đầu và kết thúc dễ đọc"], 75, 135, ["rough"]),
+      stage("deliver", 5, "Kiểm tra và xuất file", "Rà soát chất lượng và xuất đúng định dạng yêu cầu.", "Kiểm tra có chủ đích giúp phát hiện lỗi kỹ thuật trước khi nộp.", "davinci-resolve", "Cài đặt xuất và kiểm soát chất lượng", ["Xem toàn bộ timeline", "Kiểm tra chính tả và đỉnh âm thanh", "Xuất H.264 và kiểm tra file"], 30, 75, ["sound", "colour"]),
+    ],
+  },
+};
+
+function stage(
+  id: string,
+  order: number,
+  title: string,
+  goal: string,
+  why: string,
+  applicationId: string | null,
+  skillToLearn: string,
+  tasks: string[],
+  learningMinutes: number,
+  productionMinutes: number,
+  dependsOnStageIds: string[] = [],
+): RoadmapStage {
+  return {
+    id,
+    order,
+    title,
+    goal,
+    why,
+    applicationId,
+    skillToLearn,
+    tasks,
+    learningMinutes,
+    productionMinutes,
+    dependsOnStageIds,
+    tutorialIds: [],
+  };
+}
+
+function sampleKindFor(request: RoadmapRequest): SampleKind {
+  const text = `${request.projectBrief} ${request.requiredApplications.join(" ")}`.toLowerCase();
+  if (text.includes("figma") || request.outputType === "uiux") return "figma";
+  if (
+    text.includes("davinci") ||
+    text.includes("short video") ||
+    text.includes("video ngắn")
+  ) {
+    return "davinci";
+  }
+  return "blender";
+}
+
+export function createSampleRoadmap(request: RoadmapRequest): RoadmapResponse {
+  const kind = sampleKindFor(request);
+  const locale = request.interfaceLanguage;
+  const selectedStages = stages[kind][locale].map((item) => ({
+    ...item,
+    tutorialIds: fillTutorialIds(item, request.tutorialLanguage),
+  }));
+  const total = selectedStages.reduce(
+    (sum, item) => sum + item.learningMinutes + item.productionMinutes,
+    0,
+  );
+  const available = calculateAvailableMinutes(
+    request.deadline,
+    request.hoursPerDay,
+    request.daysPerWeek,
+  );
+  const status = getFeasibilityStatus(total, available);
+  const titles = {
+    en: {
+      blender: "20-second product animation roadmap",
+      figma: "Mobile app prototype roadmap",
+      davinci: "Short video editing roadmap",
+    },
+    vi: {
+      blender: "Lộ trình làm animation sản phẩm 20 giây",
+      figma: "Lộ trình làm prototype ứng dụng mobile",
+      davinci: "Lộ trình dựng video ngắn",
+    },
+  };
+  const summaries = {
+    en: {
+      blender:
+        "A focused path from references and Blender basics through modelling, animation, rendering, and final sound—scoped for a convincing university submission.",
+      figma:
+        "A compact product-design workflow that prioritises one testable user journey, a reusable UI system, and a polished interactive prototype.",
+      davinci:
+        "A story-first editing plan that moves from organised selects to a complete rough cut, clean sound, consistent colour, and a verified export.",
+    },
+    vi: {
+      blender:
+        "Lộ trình tập trung từ tham chiếu và nền tảng Blender đến modelling, animation, render và âm thanh cuối—với phạm vi phù hợp cho bài nộp đại học thuyết phục.",
+      figma:
+        "Quy trình product design gọn, ưu tiên một hành trình người dùng có thể kiểm thử, hệ thống UI tái sử dụng và prototype tương tác chỉn chu.",
+      davinci:
+        "Kế hoạch dựng ưu tiên câu chuyện, đi từ việc sắp xếp take đến rough cut hoàn chỉnh, âm thanh rõ, màu nhất quán và file xuất đã kiểm tra.",
+    },
+  };
+  const assumptions = {
+    en: [
+      "You can use a computer capable of running the recommended application.",
+      "Time estimates include focused practice but not long breaks or feedback delays.",
+    ],
+    vi: [
+      "Bạn có máy tính chạy được ứng dụng được đề xuất.",
+      "Ước tính thời gian gồm thời gian luyện tập tập trung, không gồm nghỉ dài hoặc chờ phản hồi.",
+    ],
+  };
+  const warnings =
+    status === "unrealistic"
+      ? locale === "en"
+        ? [
+            "Use simpler assets, remove advanced effects, and produce a draft-quality render first.",
+          ]
+        : [
+            "Hãy dùng asset đơn giản hơn, bỏ hiệu ứng nâng cao và ưu tiên render chất lượng nháp trước.",
+          ]
+      : [];
+
+  const plannedPerItem = Math.ceil(total / Math.min(getDaysRemaining(request.deadline), 7));
+  return {
+    id: `demo-${kind}`,
+    language: locale,
+    title: titles[locale][kind],
+    summary: summaries[locale][kind],
+    feasibility: {
+      status,
+      message: getFeasibilityMessage(status, locale),
+      daysRemaining: getDaysRemaining(request.deadline),
+      availableMinutes: available,
+      estimatedRequiredMinutes: total,
+    },
+    totalEstimatedMinutes: total,
+    assumptions: assumptions[locale],
+    warnings,
+    stages: selectedStages,
+    schedule: selectedStages.map((item, index) => ({
+      label:
+        locale === "en"
+          ? `Work block ${index + 1}`
+          : `Buổi làm việc ${index + 1}`,
+      stageIds: [item.id],
+      plannedMinutes: Math.min(
+        item.learningMinutes + item.productionMinutes,
+        plannedPerItem,
+      ),
+      priority: index < 2 ? "high" : index < selectedStages.length - 1 ? "medium" : "low",
+    })),
+    source: "demo",
+  };
+}
