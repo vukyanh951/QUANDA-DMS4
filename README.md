@@ -73,11 +73,11 @@ Edit `src/data/tutorials.json`. Each entry needs:
 
 - A unique `id`
 - English and Vietnamese display titles
-- Creator, verified URL, and content language
+- Creator, verified direct YouTube URL, matching `youtubeVideoId`, and content language
 - A supported `applicationId`
 - Search topics, level, duration, verification date, and source type
 
-Only catalogue IDs may be rendered as curated links. If no catalogue item matches, QUANDA creates a clearly labelled YouTube search suggestion rather than inventing a tutorial URL. Verify every new link before committing it.
+Only catalogue IDs may be rendered as tutorial links. Every catalogue entry must be a verified, direct YouTube video URL with a matching 11-character video ID. If no video matches, QUANDA shows an empty-state message instead of inventing a link or sending the user to search results.
 
 ## 9. Add translations
 

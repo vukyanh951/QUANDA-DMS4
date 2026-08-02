@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUpRight, BookOpen, Clock3 } from "lucide-react";
+import { ArrowUpRight, Clock3, Play, Video } from "lucide-react";
 import type { Translation } from "@/src/i18n/translations";
 import type { TutorialRecommendation } from "@/src/lib/tutorialMatcher";
 import { trackEvent } from "@/src/lib/analytics";
@@ -11,13 +11,29 @@ interface TutorialCardProps {
 }
 
 export function TutorialCard({ tutorial, t }: TutorialCardProps) {
+  const trackTutorialOpen = () => {
+    trackEvent("tutorial_opened", {
+      tutorialId: tutorial.id,
+      source: tutorial.badge,
+    });
+  };
+
   return (
     <article className="tutorial-card">
+      <a
+        aria-label={`${t.results.watchYoutube}: ${tutorial.title}`}
+        className="tutorial-thumbnail"
+        href={tutorial.url}
+        onClick={trackTutorialOpen}
+        rel="noreferrer"
+        style={{ backgroundImage: `url(${tutorial.thumbnailUrl})` }}
+        target="_blank"
+      >
+        <span className="tutorial-play"><Play aria-hidden="true" fill="currentColor" size={21} /></span>
+      </a>
       <div className="tutorial-topline">
-        <span className={`source-badge badge-${tutorial.badge}`}>
-          {tutorial.badge === "curated" ? t.results.curated : t.results.searchSuggestion}
-        </span>
-        <BookOpen aria-hidden="true" size={16} />
+        <span className="source-badge badge-youtube">{t.results.youtubeVideo}</span>
+        <Video aria-hidden="true" size={17} />
       </div>
       <h5>{tutorial.title}</h5>
       <p>{tutorial.creator}</p>
@@ -46,16 +62,11 @@ export function TutorialCard({ tutorial, t }: TutorialCardProps) {
       <a
         className="tutorial-link"
         href={tutorial.url}
-        onClick={() =>
-          trackEvent("tutorial_opened", {
-            tutorialId: tutorial.id,
-            source: tutorial.badge,
-          })
-        }
+        onClick={trackTutorialOpen}
         rel="noreferrer"
         target="_blank"
       >
-        {t.results.openTutorial}
+        {t.results.watchYoutube}
         <ArrowUpRight aria-hidden="true" size={15} />
       </a>
     </article>
