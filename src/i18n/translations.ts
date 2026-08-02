@@ -80,9 +80,8 @@ export interface Translation {
     dependencies: string;
     tutorials: string;
     noTutorial: string;
-    curated: string;
-    searchSuggestion: string;
-    openTutorial: string;
+    youtubeVideo: string;
+    watchYoutube: string;
     durationUnknown: string;
     languageNames: Record<"en" | "vi", string>;
     level: Record<"beginner" | "intermediate" | "advanced", string>;
@@ -225,10 +224,9 @@ const en: Translation = {
     tasks: "Production tasks",
     dependencies: "Depends on",
     tutorials: "Tutorials",
-    noTutorial: "Curated tutorials will appear here after catalogue matching.",
-    curated: "Curated",
-    searchSuggestion: "Search suggestion",
-    openTutorial: "Open tutorial",
+    noTutorial: "No verified YouTube video matches this stage yet.",
+    youtubeVideo: "YouTube video",
+    watchYoutube: "Watch on YouTube",
     durationUnknown: "Self-paced",
     languageNames: { en: "English", vi: "Vietnamese" },
     level: {
@@ -393,10 +391,9 @@ const vi: Translation = {
     tasks: "Nhiệm vụ sản xuất",
     dependencies: "Phụ thuộc",
     tutorials: "Tutorial",
-    noTutorial: "Tutorial tuyển chọn sẽ xuất hiện sau khi ghép catalogue.",
-    curated: "Tuyển chọn",
-    searchSuggestion: "Gợi ý tìm kiếm",
-    openTutorial: "Mở tutorial",
+    noTutorial: "Chưa có video YouTube đã xác minh phù hợp với giai đoạn này.",
+    youtubeVideo: "Video YouTube",
+    watchYoutube: "Xem trên YouTube",
     durationUnknown: "Tự học theo tiến độ",
     languageNames: { en: "Tiếng Anh", vi: "Tiếng Việt" },
     level: {

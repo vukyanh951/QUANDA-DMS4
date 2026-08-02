@@ -1108,10 +1108,52 @@ a:focus-visible {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  padding: 18px;
+  overflow: hidden;
+  padding: 0 18px 18px;
   border: 1px solid #a9c3b3;
   border-radius: 18px;
   background: var(--cyan-soft);
+}
+
+.tutorial-thumbnail {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  display: grid;
+  place-items: center;
+  margin: 0 -18px 16px;
+  background-color: #17251d;
+  background-position: center;
+  background-size: cover;
+  text-decoration: none;
+}
+
+.tutorial-thumbnail::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 45%, rgba(16, 26, 20, 0.35));
+  transition: background 150ms ease;
+}
+
+.tutorial-thumbnail:hover::after {
+  background: rgba(16, 26, 20, 0.16);
+}
+
+.tutorial-thumbnail:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: -3px;
+}
+
+.tutorial-play {
+  z-index: 1;
+  display: grid;
+  width: 52px;
+  height: 38px;
+  place-items: center;
+  border-radius: 11px;
+  background: #ff0033;
+  color: white;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
 }
 
 .tutorial-topline {
@@ -1132,9 +1174,9 @@ a:focus-visible {
   text-transform: uppercase;
 }
 
-.badge-search {
-  border-color: #b58d51;
-  color: #7b5420;
+.badge-youtube {
+  border-color: #d91b3f;
+  color: #b20e2e;
 }
 
 .tutorial-card h5 {
@@ -1195,6 +1237,16 @@ a:focus-visible {
 .tutorial-link:hover {
   background: var(--dark);
   transform: translateY(-2px);
+}
+
+.no-tutorial {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 18px;
+  border: 1px dashed var(--line);
+  border-radius: 16px;
+  color: var(--muted);
+  font-size: 0.82rem;
 }
 
 .success-state {

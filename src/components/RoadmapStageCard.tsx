@@ -120,9 +120,13 @@ export function RoadmapStageCard({
           </div>
           <div className="tutorial-list">
             <h4>{t.results.tutorials}</h4>
-            {tutorials.map((tutorial) => (
-              <TutorialCard key={tutorial.id} t={t} tutorial={tutorial} />
-            ))}
+            {tutorials.length > 0 ? (
+              tutorials.map((tutorial) => (
+                <TutorialCard key={tutorial.id} t={t} tutorial={tutorial} />
+              ))
+            ) : (
+              <p className="no-tutorial">{t.results.noTutorial}</p>
+            )}
           </div>
         </div>
       </div>
