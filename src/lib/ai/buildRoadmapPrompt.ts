@@ -38,6 +38,7 @@ CANDIDATE_TUTORIALS: ${JSON.stringify(compactTutorials)}
 NORMALIZED_INPUT: ${JSON.stringify(request)}
 
 Return one valid JSON object only. Do not use Markdown. All user-visible strings must be in ${languageName}. Never output a URL.
+${request.interfaceLanguage === "vi" ? "Write every generic heading, sentence, task, assumption, and warning in natural Vietnamese. Keep only brand and product names, file extensions, and established technical terms in English; never switch a whole phrase or sentence to English." : ""}
 
 Use this exact JSON shape:
 {
@@ -100,6 +101,7 @@ export function buildRepairPrompt(
 Repair the following invalid QUANDA roadmap into one valid JSON object only.
 Do not use Markdown. Do not add URLs or tutorial IDs that are absent from the original output.
 Keep all user-visible text in ${language === "vi" ? "Vietnamese" : "English"}.
+${language === "vi" ? "Use natural Vietnamese throughout. Keep only brand and product names, file extensions, and established technical terms in English; never switch a whole phrase or sentence to English." : ""}
 The result must contain 4 to 8 stages and satisfy these validation errors:
 ${validationErrors}
 

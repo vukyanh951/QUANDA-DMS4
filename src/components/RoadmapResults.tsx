@@ -5,7 +5,7 @@ import type { Translation } from "@/src/i18n/translations";
 import type { RoadmapResponse, TutorialLanguage } from "@/src/types";
 import { FeasibilityCard } from "./FeasibilityCard";
 import { RoadmapStageCard } from "./RoadmapStageCard";
-import { resolveTutorialRecommendations } from "@/src/lib/tutorialMatcher";
+import { resolveRoadmapTutorialRecommendations } from "@/src/lib/tutorialMatcher";
 
 interface RoadmapResultsProps {
   roadmap: RoadmapResponse;
@@ -39,6 +39,11 @@ export function RoadmapResults({
   const allComplete =
     roadmap.stages.length > 0 &&
     roadmap.stages.every((stage) => completedStageIds.includes(stage.id));
+  const tutorialsByStage = resolveRoadmapTutorialRecommendations(
+    roadmap.stages,
+    tutorialLanguage,
+    roadmap.language,
+  );
 
   return (
     <section className="results-section" id="roadmap-results" aria-labelledby="roadmap-title">
@@ -82,11 +87,7 @@ export function RoadmapResults({
             onToggle={() => onToggleStage(stage.id)}
             stage={stage}
             t={t}
-            tutorials={resolveTutorialRecommendations(
-              stage,
-              tutorialLanguage,
-              roadmap.language,
-            )}
+            tutorials={tutorialsByStage[stage.id] ?? []}
           />
         ))}
       </div>

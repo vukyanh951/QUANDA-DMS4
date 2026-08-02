@@ -43,8 +43,8 @@ export function TutorialCard({ tutorial, t }: TutorialCardProps) {
           <dd>{tutorial.applicationName}</dd>
         </div>
         <div>
-          <dt>{t.results.learning}</dt>
-          <dd>{t.results.level[tutorial.level]}</dd>
+          <dt>{t.results.version}</dt>
+          <dd>{tutorial.versionLabel}</dd>
         </div>
         <div>
           <dt>{t.form.tutorialLanguage}</dt>

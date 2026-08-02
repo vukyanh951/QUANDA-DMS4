@@ -24,7 +24,7 @@ test("creates and restores a bilingual demo roadmap", async ({ page }) => {
 
   await page.getByRole("button", { name: "VI" }).click();
   await expect(
-    page.getByRole("heading", { name: "Lộ trình làm animation sản phẩm 20 giây" }),
+    page.getByRole("heading", { name: "Lộ trình làm hoạt hình sản phẩm 20 giây" }),
   ).toBeVisible();
   await expect(page.getByRole("button", { name: "Tạo lại" })).toBeVisible();
 
