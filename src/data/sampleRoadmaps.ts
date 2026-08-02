@@ -28,13 +28,13 @@ const stages: Record<SampleKind, Record<Locale, RoadmapStage[]>> = {
     ],
     vi: [
       stage("brief", 1, "Chốt câu chuyện và đầu ra", "Xác định sản phẩm, thông điệp và danh sách cảnh cho video 20 giây.", "Kế hoạch ngắn giúp tránh thay đổi tốn thời gian sau khi bắt đầu dựng hình.", null, "Chọn tham chiếu và lập kế hoạch cảnh", ["Viết thông điệp sản phẩm trong một câu", "Thu thập 6–10 hình tham chiếu", "Phác thảo chuỗi ba cảnh"], 30, 60),
-      stage("basics", 2, "Học nền tảng Blender", "Di chuyển trong viewport, biến đổi vật thể và quản lý scene đơn giản.", "Thao tác cơ bản thành thạo giúp mọi bước sau nhanh hơn.", "blender", "Điều hướng viewport và transform vật thể", ["Hoàn thành bài tập điều hướng ngắn", "Luyện move, rotate, scale và duplicate", "Lưu scene khởi đầu sạch"], 90, 45, ["brief"]),
-      stage("model", 3, "Dựng mô hình sản phẩm", "Tạo sản phẩm dễ nhận biết bằng hình khối đơn giản, gọn gàng.", "Mô hình là nền tảng hình ảnh cho ánh sáng và animation.", "blender", "Dựng hard-surface bằng hình học đơn giản", ["Chặn hình khối chính", "Thêm chi tiết phụ", "Kiểm tra tỷ lệ từ góc camera"], 75, 180, ["basics"]),
-      stage("materials", 4, "Tạo material", "Thiết lập bề mặt rõ ràng và màu thương hiệu cho sản phẩm.", "Độ tương phản material giúp sản phẩm dễ đọc trong thời gian ngắn.", "blender", "Principled material và texture cơ bản", ["Tạo 2–4 material tái sử dụng", "Áp nhãn hoặc logo", "Kiểm tra roughness dưới ánh sáng trung tính"], 60, 120, ["model"]),
-      stage("camera", 5, "Thiết lập ánh sáng và khung hình", "Tạo studio đơn giản và chốt góc camera.", "Khung hình và ánh sáng tốt giúp hình khối đơn giản trông có chủ đích.", "blender", "Ánh sáng ba điểm và bố cục camera", ["Đặt camera 1080p", "Tạo key, fill và rim light", "Lưu một look frame đã duyệt"], 60, 120, ["materials"]),
-      stage("animate", 6, "Animate sản phẩm", "Tạo chuyển động sản phẩm và camera rõ ràng trong 20 giây.", "Nhịp chuyển động biến asset tĩnh thành câu chuyện hình ảnh mạch lạc.", "blender", "Keyframe, easing và camera animation", ["Chặn key pose trước", "Tinh chỉnh easing trong graph editor", "Tạo preview độ phân giải thấp"], 75, 180, ["camera"]),
-      stage("render", 7, "Render an toàn", "Xuất image sequence với thiết lập chất lượng thực tế.", "Image sequence dễ phục hồi hơn nếu quá trình render bị gián đoạn.", "blender", "Thiết lập render và quy trình image sequence", ["Render thử năm frame", "Chọn số sample phù hợp", "Render chuỗi PNG có đánh số"], 35, 120, ["animate"]),
-      stage("finish", 8, "Thêm âm thanh và xuất file", "Dựng chuỗi ảnh, thêm âm thanh đơn giản và xuất MP4 1080p.", "Bước dựng cuối thống nhất nhịp, âm thanh và cài đặt nộp bài.", "davinci-resolve", "Dựng timeline và xuất H.264", ["Nhập image sequence", "Thêm nhạc hoặc hiệu ứng âm thanh được phép", "Xuất và xem lại toàn bộ MP4"], 45, 120, ["render"]),
+      stage("basics", 2, "Học nền tảng Blender", "Di chuyển trong khung nhìn 3D, biến đổi vật thể và quản lý một cảnh đơn giản.", "Thao tác cơ bản thành thạo giúp mọi bước sau nhanh hơn.", "blender", "Điều hướng khung nhìn và biến đổi vật thể", ["Hoàn thành bài tập điều hướng ngắn", "Luyện di chuyển, xoay, thu phóng và nhân bản", "Lưu cảnh khởi đầu gọn gàng"], 90, 45, ["brief"]),
+      stage("model", 3, "Dựng mô hình sản phẩm", "Tạo sản phẩm dễ nhận biết bằng hình khối đơn giản, gọn gàng.", "Mô hình là nền tảng hình ảnh cho ánh sáng và chuyển động.", "blender", "Dựng bề mặt cứng bằng hình học đơn giản", ["Chặn hình khối chính", "Thêm chi tiết phụ", "Kiểm tra tỷ lệ từ góc máy quay"], 75, 180, ["basics"]),
+      stage("materials", 4, "Tạo vật liệu", "Thiết lập bề mặt rõ ràng và màu thương hiệu cho sản phẩm.", "Độ tương phản vật liệu giúp sản phẩm dễ nhìn trong thời gian ngắn.", "blender", "Vật liệu Principled và họa tiết cơ bản", ["Tạo 2–4 vật liệu có thể tái sử dụng", "Áp nhãn hoặc logo", "Kiểm tra độ nhám dưới ánh sáng trung tính"], 60, 120, ["model"]),
+      stage("camera", 5, "Thiết lập ánh sáng và khung hình", "Tạo không gian chụp đơn giản và chốt góc máy quay.", "Khung hình và ánh sáng tốt giúp hình khối đơn giản trông có chủ đích.", "blender", "Ánh sáng ba điểm và bố cục máy quay", ["Đặt máy quay ở độ phân giải 1080p", "Tạo đèn chính, đèn phụ và đèn viền", "Lưu một khung hình mẫu đã duyệt"], 60, 120, ["materials"]),
+      stage("animate", 6, "Tạo chuyển động cho sản phẩm", "Tạo chuyển động sản phẩm và máy quay rõ ràng trong 20 giây.", "Nhịp chuyển động biến hình ảnh tĩnh thành câu chuyện mạch lạc.", "blender", "Khung hình chính, độ mượt và chuyển động máy quay", ["Chặn các tư thế chính trước", "Tinh chỉnh độ mượt trong Trình chỉnh đồ thị", "Tạo bản xem trước độ phân giải thấp"], 75, 180, ["camera"]),
+      stage("render", 7, "Kết xuất an toàn", "Xuất chuỗi ảnh với thiết lập chất lượng phù hợp.", "Chuỗi ảnh dễ phục hồi hơn nếu quá trình kết xuất bị gián đoạn.", "blender", "Thiết lập kết xuất và quy trình chuỗi ảnh", ["Kết xuất thử năm khung hình", "Chọn số mẫu phù hợp", "Kết xuất chuỗi PNG có đánh số"], 35, 120, ["animate"]),
+      stage("finish", 8, "Thêm âm thanh và xuất tệp", "Dựng chuỗi ảnh, thêm âm thanh đơn giản và xuất MP4 1080p.", "Bước dựng cuối thống nhất nhịp, âm thanh và cài đặt nộp bài.", "davinci-resolve", "Dựng trên dòng thời gian và xuất H.264", ["Nhập chuỗi ảnh", "Thêm nhạc hoặc hiệu ứng âm thanh được phép", "Xuất và xem lại toàn bộ MP4"], 45, 120, ["render"]),
     ],
   },
   figma: {
@@ -46,11 +46,11 @@ const stages: Record<SampleKind, Record<Locale, RoadmapStage[]>> = {
       stage("prototype", 5, "Build and test the prototype", "Create interactions, test the flow, and prepare a share link.", "A tested prototype demonstrates the experience rather than isolated screens.", "figma", "Prototype interactions and usability checks", ["Add navigation and overlays", "Run two task-based tests", "Fix blockers and present the final flow"], 60, 150, ["polish"]),
     ],
     vi: [
-      stage("scope", 1, "Xác định phạm vi prototype", "Chọn một hành trình người dùng cốt lõi và tiêu chí thành công.", "Hành trình gọn giúp prototype dễ kiểm thử và khả thi.", "figma", "Thu gọn user flow", ["Viết mục tiêu người dùng", "Lập sơ đồ 5–7 màn hình chính", "Liệt kê nội dung bắt buộc"], 35, 60),
-      stage("wireframe", 2, "Tạo wireframe cho luồng chính", "Dựng layout low-fidelity cho mọi màn hình quan trọng.", "Wireframe phát hiện vấn đề về luồng trước khi trau chuốt hình ảnh.", "figma", "Frame, auto layout và UI low-fidelity", ["Tạo frame mobile", "Sắp xếp thứ bậc nội dung", "Nối click-through đầu tiên"], 75, 150, ["scope"]),
-      stage("system", 3, "Tạo hệ thống UI nhỏ", "Định nghĩa typography, màu, khoảng cách và control tái sử dụng.", "Hệ thống gọn giúp giao diện nhất quán mà không thiết kế quá mức.", "figma", "Component, style và variant", ["Tạo style chữ và màu", "Dựng component button và input", "Kiểm tra độ tương phản màu"], 90, 150, ["wireframe"]),
-      stage("polish", 4, "Thiết kế màn hình hoàn chỉnh", "Áp dụng hệ thống hình ảnh cho toàn bộ hành trình chính.", "Màn hình high-fidelity giúp phản hồi cụ thể và hữu ích hơn.", "figma", "Layout responsive và thứ bậc hình ảnh", ["Hoàn thiện các màn hình chính", "Dùng nội dung thực tế", "Kiểm tra khoảng cách và trạng thái"], 45, 180, ["system"]),
-      stage("prototype", 5, "Tạo và kiểm thử prototype", "Thêm tương tác, kiểm thử luồng và chuẩn bị link chia sẻ.", "Prototype đã kiểm thử thể hiện trải nghiệm thay vì các màn hình rời rạc.", "figma", "Tương tác prototype và kiểm tra usability", ["Thêm navigation và overlay", "Chạy hai bài test theo nhiệm vụ", "Sửa điểm nghẽn và trình bày luồng cuối"], 60, 150, ["polish"]),
+      stage("scope", 1, "Xác định phạm vi bản mẫu", "Chọn một hành trình người dùng cốt lõi và tiêu chí thành công.", "Hành trình gọn giúp bản mẫu dễ kiểm thử và khả thi.", "figma", "Thu gọn luồng người dùng", ["Viết mục tiêu người dùng", "Lập sơ đồ 5–7 màn hình chính", "Liệt kê nội dung bắt buộc"], 35, 60),
+      stage("wireframe", 2, "Tạo sơ đồ khung cho luồng chính", "Dựng bố cục độ chi tiết thấp cho mọi màn hình quan trọng.", "Sơ đồ khung giúp phát hiện vấn đề về luồng trước khi trau chuốt hình ảnh.", "figma", "Khung, Auto Layout và giao diện độ chi tiết thấp", ["Tạo khung màn hình di động", "Sắp xếp thứ bậc nội dung", "Nối luồng bấm thử đầu tiên"], 75, 150, ["scope"]),
+      stage("system", 3, "Tạo hệ thống giao diện nhỏ", "Xác định hệ chữ, màu sắc, khoảng cách và các điều khiển có thể tái sử dụng.", "Hệ thống gọn giúp giao diện nhất quán mà không thiết kế quá mức.", "figma", "Thành phần, kiểu và biến thể", ["Tạo kiểu chữ và màu", "Dựng thành phần nút và trường nhập", "Kiểm tra độ tương phản màu"], 90, 150, ["wireframe"]),
+      stage("polish", 4, "Thiết kế màn hình hoàn chỉnh", "Áp dụng hệ thống hình ảnh cho toàn bộ hành trình chính.", "Màn hình độ chi tiết cao giúp phản hồi cụ thể và hữu ích hơn.", "figma", "Bố cục thích ứng và thứ bậc hình ảnh", ["Hoàn thiện các màn hình chính", "Dùng nội dung thực tế", "Kiểm tra khoảng cách và trạng thái"], 45, 180, ["system"]),
+      stage("prototype", 5, "Tạo và kiểm thử bản mẫu", "Thêm tương tác, kiểm thử luồng và chuẩn bị liên kết chia sẻ.", "Bản mẫu đã kiểm thử thể hiện trải nghiệm thay vì các màn hình rời rạc.", "figma", "Tương tác bản mẫu và kiểm tra khả năng sử dụng", ["Thêm điều hướng và lớp phủ", "Chạy hai bài kiểm thử theo nhiệm vụ", "Sửa điểm nghẽn và trình bày luồng cuối"], 60, 150, ["polish"]),
     ],
   },
   davinci: {
@@ -62,11 +62,11 @@ const stages: Record<SampleKind, Record<Locale, RoadmapStage[]>> = {
       stage("deliver", 5, "Review and export", "Run a quality check and export the required delivery file.", "A deliberate review catches technical errors before submission.", "davinci-resolve", "Delivery settings and quality control", ["Watch the full timeline", "Check spelling and audio peaks", "Export H.264 and verify the file"], 30, 75, ["sound", "colour"]),
     ],
     vi: [
-      stage("organise", 1, "Sắp xếp footage và câu chuyện", "Kiểm tra clip và dựng cấu trúc mở đầu, phát triển, kết thúc đơn giản.", "Tổ chức tốt bảo vệ thời gian dựng và độ rõ của câu chuyện.", "davinci-resolve", "Quản lý media và chọn take", ["Sao lưu file gốc", "Tạo bin có nhãn rõ ràng", "Đánh dấu khoảnh khắc tốt nhất"], 35, 75),
-      stage("rough", 2, "Dựng rough cut", "Tạo phiên bản hoàn chỉnh có thể xem trước khi trau chuốt.", "Rough cut đầy đủ cho thấy sớm vấn đề về nhịp và nội dung thiếu.", "davinci-resolve", "Dựng timeline và cắt chỉnh", ["Ghép câu chuyện", "Cắt khoảng dừng và phần lặp", "Thêm nhạc tạm"], 60, 180, ["organise"]),
-      stage("sound", 3, "Làm sạch thoại và âm thanh", "Làm thoại rõ và cân bằng các thành phần âm thanh chính.", "Người xem thường chấp nhận hình chưa hoàn hảo hơn là âm thanh khó nghe.", "davinci-resolve", "Mức âm lượng, fade và làm sạch cơ bản", ["Đặt mức thoại nhất quán", "Giảm tiếng ồn gây xao nhãng khi có thể", "Thêm fade và room tone"], 60, 120, ["rough"]),
-      stage("colour", 4, "Chỉnh màu và title", "Cân bằng các shot và thêm title tiết chế.", "Sự nhất quán tạo cảm giác hoàn thiện mà không cần hiệu ứng thừa.", "davinci-resolve", "Chỉnh màu cơ bản và title", ["Cân bằng exposure và white balance", "Match các shot liền kề", "Thêm title mở đầu và kết thúc dễ đọc"], 75, 135, ["rough"]),
-      stage("deliver", 5, "Kiểm tra và xuất file", "Rà soát chất lượng và xuất đúng định dạng yêu cầu.", "Kiểm tra có chủ đích giúp phát hiện lỗi kỹ thuật trước khi nộp.", "davinci-resolve", "Cài đặt xuất và kiểm soát chất lượng", ["Xem toàn bộ timeline", "Kiểm tra chính tả và đỉnh âm thanh", "Xuất H.264 và kiểm tra file"], 30, 75, ["sound", "colour"]),
+      stage("organise", 1, "Sắp xếp cảnh quay và câu chuyện", "Kiểm tra các đoạn phim và dựng cấu trúc mở đầu, phát triển, kết thúc đơn giản.", "Tổ chức tốt giúp bảo vệ thời gian dựng và độ rõ của câu chuyện.", "davinci-resolve", "Quản lý tư liệu và chọn cảnh quay", ["Sao lưu tệp gốc", "Tạo thư mục có nhãn rõ ràng", "Đánh dấu những khoảnh khắc tốt nhất"], 35, 75),
+      stage("rough", 2, "Dựng bản nháp", "Tạo phiên bản hoàn chỉnh có thể xem trước khi trau chuốt.", "Bản dựng nháp đầy đủ cho thấy sớm vấn đề về nhịp và nội dung còn thiếu.", "davinci-resolve", "Dựng trên dòng thời gian và cắt chỉnh", ["Ghép câu chuyện", "Cắt khoảng dừng và phần lặp", "Thêm nhạc tạm"], 60, 180, ["organise"]),
+      stage("sound", 3, "Làm sạch thoại và âm thanh", "Làm thoại rõ và cân bằng các thành phần âm thanh chính.", "Người xem thường chấp nhận hình chưa hoàn hảo hơn là âm thanh khó nghe.", "davinci-resolve", "Mức âm lượng, chuyển âm và làm sạch cơ bản", ["Đặt mức thoại nhất quán", "Giảm tiếng ồn gây xao nhãng khi có thể", "Thêm chuyển âm và âm nền phòng"], 60, 120, ["rough"]),
+      stage("colour", 4, "Chỉnh màu và chữ tiêu đề", "Cân bằng các cảnh và thêm chữ tiêu đề vừa phải.", "Sự nhất quán tạo cảm giác hoàn thiện mà không cần hiệu ứng thừa.", "davinci-resolve", "Chỉnh màu cơ bản và chữ tiêu đề", ["Cân bằng độ phơi sáng và cân bằng trắng", "Cân khớp các cảnh liền kề", "Thêm chữ mở đầu và kết thúc dễ đọc"], 75, 135, ["rough"]),
+      stage("deliver", 5, "Kiểm tra và xuất tệp", "Rà soát chất lượng và xuất đúng định dạng yêu cầu.", "Kiểm tra có chủ đích giúp phát hiện lỗi kỹ thuật trước khi nộp.", "davinci-resolve", "Cài đặt xuất và kiểm soát chất lượng", ["Xem toàn bộ dòng thời gian", "Kiểm tra chính tả và đỉnh âm thanh", "Xuất H.264 và kiểm tra tệp"], 30, 75, ["sound", "colour"]),
     ],
   },
 };
@@ -137,8 +137,8 @@ export function createSampleRoadmap(request: RoadmapRequest): RoadmapResponse {
       davinci: "Short video editing roadmap",
     },
     vi: {
-      blender: "Lộ trình làm animation sản phẩm 20 giây",
-      figma: "Lộ trình làm prototype ứng dụng mobile",
+      blender: "Lộ trình làm hoạt hình sản phẩm 20 giây",
+      figma: "Lộ trình làm bản mẫu ứng dụng di động",
       davinci: "Lộ trình dựng video ngắn",
     },
   };
@@ -153,11 +153,11 @@ export function createSampleRoadmap(request: RoadmapRequest): RoadmapResponse {
     },
     vi: {
       blender:
-        "Lộ trình tập trung từ tham chiếu và nền tảng Blender đến modelling, animation, render và âm thanh cuối—với phạm vi phù hợp cho bài nộp đại học thuyết phục.",
+        "Lộ trình tập trung từ tham chiếu và nền tảng Blender đến dựng hình, tạo chuyển động, kết xuất và hoàn thiện âm thanh—với phạm vi phù hợp cho bài nộp đại học.",
       figma:
-        "Quy trình product design gọn, ưu tiên một hành trình người dùng có thể kiểm thử, hệ thống UI tái sử dụng và prototype tương tác chỉn chu.",
+        "Quy trình thiết kế sản phẩm gọn, ưu tiên một hành trình người dùng có thể kiểm thử, hệ thống giao diện tái sử dụng và bản mẫu tương tác chỉn chu.",
       davinci:
-        "Kế hoạch dựng ưu tiên câu chuyện, đi từ việc sắp xếp take đến rough cut hoàn chỉnh, âm thanh rõ, màu nhất quán và file xuất đã kiểm tra.",
+        "Kế hoạch dựng ưu tiên câu chuyện, đi từ việc sắp xếp cảnh quay đến bản dựng nháp hoàn chỉnh, âm thanh rõ, màu nhất quán và tệp xuất đã kiểm tra.",
     },
   };
   const assumptions = {
@@ -177,7 +177,7 @@ export function createSampleRoadmap(request: RoadmapRequest): RoadmapResponse {
             "Use simpler assets, remove advanced effects, and produce a draft-quality render first.",
           ]
         : [
-            "Hãy dùng asset đơn giản hơn, bỏ hiệu ứng nâng cao và ưu tiên render chất lượng nháp trước.",
+            "Hãy dùng tài sản đơn giản hơn, bỏ hiệu ứng nâng cao và ưu tiên kết xuất chất lượng nháp trước.",
           ]
       : [];
 

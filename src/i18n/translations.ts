@@ -81,6 +81,7 @@ export interface Translation {
     tutorials: string;
     noTutorial: string;
     youtubeVideo: string;
+    version: string;
     watchYoutube: string;
     durationUnknown: string;
     languageNames: Record<"en" | "vi", string>;
@@ -226,6 +227,7 @@ const en: Translation = {
     tutorials: "Tutorials",
     noTutorial: "No verified YouTube video matches this stage yet.",
     youtubeVideo: "YouTube video",
+    version: "Software version",
     watchYoutube: "Watch on YouTube",
     durationUnknown: "Self-paced",
     languageNames: { en: "English", vi: "Vietnamese" },
@@ -316,7 +318,7 @@ const vi: Translation = {
       },
       {
         title: "Học, làm, hoàn thành",
-        description: "Theo tutorial tuyển chọn và đánh dấu từng đầu ra cụ thể.",
+        description: "Theo video hướng dẫn đã tuyển chọn và đánh dấu từng đầu ra cụ thể.",
       },
     ],
   },
@@ -336,7 +338,7 @@ const vi: Translation = {
     experiencePlaceholder: "Photoshop: trung cấp; Blender: mới bắt đầu",
     hoursPerDay: "Số giờ mỗi ngày học",
     daysPerWeek: "Số ngày học mỗi tuần",
-    tutorialLanguage: "Ngôn ngữ tutorial ưu tiên",
+    tutorialLanguage: "Ngôn ngữ video hướng dẫn ưu tiên",
     applications: "Ứng dụng bắt buộc",
     noApplication: "Không yêu cầu ứng dụng",
     outputType: "Loại sản phẩm mong muốn",
@@ -362,17 +364,17 @@ const vi: Translation = {
       { value: "either", label: "Cả hai" },
     ],
     outputOptions: [
-      { value: "video", label: "Video / Animation" },
-      { value: "3d", label: "Asset 3D" },
+      { value: "video", label: "Video / Hoạt hình" },
+      { value: "3d", label: "Mô hình 3D" },
       { value: "graphic", label: "Thiết kế đồ họa" },
-      { value: "uiux", label: "Prototype UI/UX" },
+      { value: "uiux", label: "Bản mẫu UI/UX" },
       { value: "audio", label: "Dự án âm thanh" },
       { value: "photo", label: "Nhiếp ảnh" },
       { value: "other", label: "Khác" },
     ],
     qualityOptions: [
       { value: "basic", label: "Bài nộp cơ bản" },
-      { value: "portfolio", label: "Sẵn sàng cho portfolio" },
+      { value: "portfolio", label: "Sẵn sàng cho hồ sơ năng lực" },
       { value: "unsure", label: "Chưa chắc" },
     ],
   },
@@ -390,9 +392,10 @@ const vi: Translation = {
     skill: "Kỹ năng cần học",
     tasks: "Nhiệm vụ sản xuất",
     dependencies: "Phụ thuộc",
-    tutorials: "Tutorial",
+    tutorials: "Video hướng dẫn",
     noTutorial: "Chưa có video YouTube đã xác minh phù hợp với giai đoạn này.",
     youtubeVideo: "Video YouTube",
+    version: "Phiên bản phần mềm",
     watchYoutube: "Xem trên YouTube",
     durationUnknown: "Tự học theo tiến độ",
     languageNames: { en: "Tiếng Anh", vi: "Tiếng Việt" },
@@ -435,7 +438,7 @@ const vi: Translation = {
     statuses: [
       "Đang đọc đề bài",
       "Đang xác định các giai đoạn sản xuất",
-      "Đang ghép tutorial phù hợp",
+      "Đang ghép video hướng dẫn phù hợp",
       "Đang kiểm tra thời hạn",
     ],
   },

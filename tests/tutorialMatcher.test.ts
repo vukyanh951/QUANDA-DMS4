@@ -3,6 +3,7 @@ import {
   extractYouTubeVideoId,
   fillTutorialIds,
   matchTutorialsForStage,
+  resolveRoadmapTutorialRecommendations,
   resolveTutorialRecommendations,
   tutorials,
   validateTutorialIds,
@@ -26,7 +27,7 @@ const stage: RoadmapStage = {
 
 describe("tutorial catalogue matching", () => {
   it("contains direct YouTube videos only", () => {
-    expect(tutorials).toHaveLength(24);
+    expect(tutorials).toHaveLength(36);
     expect(
       tutorials.every(
         (tutorial) =>
@@ -43,11 +44,11 @@ describe("tutorial catalogue matching", () => {
   it("keeps only unique catalogue IDs", () => {
     expect(
       validateTutorialIds([
-        "blender-navigation",
+        "blender-2026-course-en",
         "not-in-the-catalogue",
-        "blender-navigation",
+        "blender-2026-course-en",
       ]),
-    ).toEqual(["blender-navigation"]);
+    ).toEqual(["blender-2026-course-en"]);
   });
 
   it("falls back to deterministic catalogue matches for a stage", () => {
@@ -63,7 +64,7 @@ describe("tutorial catalogue matching", () => {
 
   it("replaces an AI-selected video when it belongs to another application", () => {
     const ids = fillTutorialIds(
-      { ...stage, tutorialIds: ["figma-auto-layout"] },
+      { ...stage, tutorialIds: ["figma-auto-layout-en"] },
       "en",
     );
 
@@ -90,5 +91,47 @@ describe("tutorial catalogue matching", () => {
     expect(recommendation.thumbnailUrl).toBe(
       `https://i.ytimg.com/vi/${extractYouTubeVideoId(recommendation.url)}/hqdefault.jpg`,
     );
+  });
+
+  it("keeps the catalogue balanced across supported applications and languages", () => {
+    const applications = new Set(tutorials.map((tutorial) => tutorial.applicationId));
+
+    expect(applications.size).toBe(6);
+    for (const applicationId of applications) {
+      expect(
+        tutorials.filter(
+          (tutorial) =>
+            tutorial.applicationId === applicationId && tutorial.language === "en",
+        ),
+      ).toHaveLength(3);
+      expect(
+        tutorials.filter(
+          (tutorial) =>
+            tutorial.applicationId === applicationId && tutorial.language === "vi",
+        ),
+      ).toHaveLength(3);
+    }
+    expect(tutorials.every((tutorial) => tutorial.publishedAt && tutorial.versionLabel))
+      .toBe(true);
+  });
+
+  it("never repeats a tutorial across stages in one roadmap", () => {
+    const roadmapStages = Array.from({ length: 5 }, (_, index) => ({
+      ...stage,
+      id: `blender-stage-${index + 1}`,
+      order: index + 1,
+      tutorialIds: [],
+    }));
+    const recommendations = resolveRoadmapTutorialRecommendations(
+      roadmapStages,
+      "either",
+      "en",
+    );
+    const ids = Object.values(recommendations)
+      .flat()
+      .map((tutorial) => tutorial.id);
+
+    expect(ids.length).toBeGreaterThan(0);
+    expect(new Set(ids).size).toBe(ids.length);
   });
 });
