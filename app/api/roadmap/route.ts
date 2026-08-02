@@ -3,9 +3,9 @@ import { applications } from "@/src/data/applications";
 import { createSampleRoadmap } from "@/src/data/sampleRoadmaps";
 import { buildRoadmapPrompt } from "@/src/lib/ai/buildRoadmapPrompt";
 import {
-  callQwenForRoadmap,
-  repairQwenRoadmap,
-} from "@/src/lib/ai/qwen";
+  callGoogleAiForRoadmap,
+  repairGoogleAiRoadmap,
+} from "@/src/lib/ai/googleAi";
 import {
   calculateAvailableMinutes,
   getDaysRemaining,
@@ -28,12 +28,14 @@ function response(
   body: object,
   status = 200,
   source?: RoadmapResponse["source"],
+  diagnostic?: string,
 ) {
   return NextResponse.json(body, {
     status,
     headers: {
       "Cache-Control": "no-store",
       ...(source ? { "X-QUANDA-Source": source } : {}),
+      ...(diagnostic ? { "X-QUANDA-Diagnostic": diagnostic } : {}),
     },
   });
 }
@@ -88,6 +90,23 @@ function parseRoadmap(content: string) {
   } catch {
     return RoadmapResponseSchema.safeParse(null);
   }
+}
+
+function logAiFailure(stage: string, error: unknown) {
+  const message =
+    error instanceof Error ? `${error.name}: ${error.message}` : "Unknown error";
+  console.error(`[QUANDA] Google AI ${stage} failed: ${message}`);
+}
+
+function aiDiagnosticCode(error: unknown): string {
+  if (!(error instanceof Error)) return "request_error";
+  const upstreamCode = error.message.match(
+    /Google AI request failed \(([A-Z0-9_]+)\)/,
+  )?.[1];
+  if (upstreamCode) return `upstream_${upstreamCode.toLowerCase()}`;
+  if (error.name === "AbortError") return "timeout";
+  if (error.message === "Empty model response") return "empty_response";
+  return "request_error";
 }
 
 function demoRoadmap(
@@ -163,7 +182,7 @@ export async function POST(request: NextRequest) {
   }
 
   const roadmapRequest = parsedRequest.data;
-  if (!process.env.DASHSCOPE_API_KEY) {
+  if (!process.env.GEMINI_API_KEY) {
     const roadmap = demoRoadmap(roadmapRequest, "demo");
     return response(roadmap, 200, roadmap.source);
   }
@@ -183,36 +202,50 @@ export async function POST(request: NextRequest) {
       supportedApplicationIds: applications.map((application) => application.id),
     });
 
-    const originalOutput = await callQwenForRoadmap(
+    const originalOutput = await callGoogleAiForRoadmap(
       prompt,
       controller.signal,
     );
     let parsedRoadmap = parseRoadmap(originalOutput);
+    let repairDiagnostic: string | undefined;
 
     if (!parsedRoadmap.success) {
       try {
-        const repairedOutput = await repairQwenRoadmap(
+        const repairedOutput = await repairGoogleAiRoadmap(
           originalOutput,
           validationSummary(parsedRoadmap.error),
           roadmapRequest.interfaceLanguage,
           controller.signal,
         );
         parsedRoadmap = parseRoadmap(repairedOutput);
-      } catch {
+      } catch (error) {
+        logAiFailure("repair request", error);
+        repairDiagnostic = aiDiagnosticCode(error);
         parsedRoadmap = RoadmapResponseSchema.safeParse(null);
       }
     }
 
     if (!parsedRoadmap.success) {
       const roadmap = demoRoadmap(roadmapRequest, "fallback");
-      return response(roadmap, 200, roadmap.source);
+      return response(
+        roadmap,
+        200,
+        roadmap.source,
+        repairDiagnostic || "invalid_after_repair",
+      );
     }
 
     const roadmap = normalizeRoadmap(parsedRoadmap.data, roadmapRequest);
     return response(roadmap, 200, roadmap.source);
-  } catch {
+  } catch (error) {
+    logAiFailure("generation request", error);
     const roadmap = demoRoadmap(roadmapRequest, "fallback");
-    return response(roadmap, 200, roadmap.source);
+    return response(
+      roadmap,
+      200,
+      roadmap.source,
+      aiDiagnosticCode(error),
+    );
   } finally {
     clearTimeout(timeout);
   }

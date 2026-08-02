@@ -296,8 +296,8 @@ const vi: Translation = {
   },
   hero: {
     eyebrow: "Trợ lý thực tế cho dự án sáng tạo",
-    titleLead: "Biến thời hạn thành điều",
-    titleAccent: "có thể làm được.",
+    titleLead: "Biến deadline thành",
+    titleAccent: "điều khả thi.",
     tagline: "Từ đề bài dự án đến lộ trình học tập thực tế.",
     description:
       "QUANDA biến đề bài, kinh nghiệm và thời gian của bạn thành kế hoạch sản xuất tập trung—kèm nguồn học đáng tin cậy cho từng kỹ năng.",
