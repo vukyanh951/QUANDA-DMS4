@@ -255,12 +255,7 @@ export function QuandaApp({ demoMode }: QuandaAppProps) {
           onLoadExample={loadExample}
         />
 
-        <section className="hero" aria-labelledby="hero-title">
-          <div className="route-motif" aria-hidden="true">
-            <span />
-            <span />
-            <span />
-          </div>
+        <section className={`hero hero-${locale}`} aria-labelledby="hero-title">
           <p className="eyebrow">{t.hero.eyebrow}</p>
           <h1 id="hero-title">
             {t.hero.titleLead} <em>{t.hero.titleAccent}</em>
@@ -275,7 +270,6 @@ export function QuandaApp({ demoMode }: QuandaAppProps) {
             <span>{t.hero.note}</span>
           </div>
         </section>
-
         <section className="how-section" id="how-it-works" aria-labelledby="how-title">
           <div className="section-heading">
             <p className="eyebrow">{t.how.eyebrow}</p>
