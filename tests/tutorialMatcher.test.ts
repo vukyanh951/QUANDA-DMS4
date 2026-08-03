@@ -5,10 +5,12 @@ import {
   matchTutorialsForStage,
   resolveRoadmapTutorialRecommendations,
   resolveTutorialRecommendations,
+  selectCandidateTutorials,
   tutorials,
   validateTutorialIds,
 } from "@/src/lib/tutorialMatcher";
 import type { RoadmapStage } from "@/src/types";
+import { applications } from "@/src/data/applications";
 
 const stage: RoadmapStage = {
   id: "model",
@@ -27,7 +29,7 @@ const stage: RoadmapStage = {
 
 describe("tutorial catalogue matching", () => {
   it("contains direct YouTube videos only", () => {
-    expect(tutorials).toHaveLength(36);
+    expect(tutorials).toHaveLength(60);
     expect(
       tutorials.every(
         (tutorial) =>
@@ -75,7 +77,7 @@ describe("tutorial catalogue matching", () => {
   it("does not create search links when no verified video matches", () => {
     const unsupportedStage = {
       ...stage,
-      applicationId: "premiere-pro",
+      applicationId: "unknown-app",
       tutorialIds: [],
     };
 
@@ -96,7 +98,7 @@ describe("tutorial catalogue matching", () => {
   it("keeps the catalogue balanced across supported applications and languages", () => {
     const applications = new Set(tutorials.map((tutorial) => tutorial.applicationId));
 
-    expect(applications.size).toBe(6);
+    expect(applications.size).toBe(10);
     for (const applicationId of applications) {
       expect(
         tutorials.filter(
@@ -113,6 +115,39 @@ describe("tutorial catalogue matching", () => {
     }
     expect(tutorials.every((tutorial) => tutorial.publishedAt && tutorial.versionLabel))
       .toBe(true);
+  });
+
+  it("covers every application shown in the project form", () => {
+    const catalogueApplicationIds = new Set(
+      tutorials.map((tutorial) => tutorial.applicationId),
+    );
+
+    expect(
+      applications.every((application) => catalogueApplicationIds.has(application.id)),
+    ).toBe(true);
+  });
+
+  it("gives the AI at least one candidate for every selected application", () => {
+    const selected = selectCandidateTutorials({
+      interfaceLanguage: "en",
+      projectBrief:
+        "Create a mixed-media portfolio project using every selected creative application.",
+      deadline: "2026-12-01",
+      currentExperience: "Beginner across the selected applications.",
+      hoursPerDay: 2,
+      daysPerWeek: 5,
+      tutorialLanguage: "either",
+      requiredApplications: applications.map((application) => application.id),
+      outputType: "other",
+      targetQuality: "basic",
+    });
+    const selectedApplicationIds = new Set(
+      selected.map((tutorial) => tutorial.applicationId),
+    );
+
+    expect(
+      applications.every((application) => selectedApplicationIds.has(application.id)),
+    ).toBe(true);
   });
 
   it("never repeats a tutorial across stages in one roadmap", () => {

@@ -96,7 +96,7 @@ export function selectCandidateTutorials(
   );
   const requiredApplications = new Set(request.requiredApplications);
 
-  return tutorials
+  const ranked = tutorials
     .filter(
       (tutorial) =>
         languageMatches(tutorial, request.tutorialLanguage) &&
@@ -114,9 +114,33 @@ export function selectCandidateTutorials(
       if (tutorial.level === "beginner") score += 1;
       return { tutorial, score };
     })
-    .sort((a, b) => b.score - a.score || a.tutorial.id.localeCompare(b.tutorial.id))
-    .slice(0, limit)
-    .map(({ tutorial }) => tutorial);
+    .sort((a, b) => b.score - a.score || a.tutorial.id.localeCompare(b.tutorial.id));
+
+  if (requiredApplications.size === 0) {
+    return ranked.slice(0, limit).map(({ tutorial }) => tutorial);
+  }
+
+  const selected: Tutorial[] = [];
+  const selectedIds = new Set<string>();
+  for (const applicationId of requiredApplications) {
+    const firstMatch = ranked.find(
+      ({ tutorial }) => tutorial.applicationId === applicationId,
+    )?.tutorial;
+    if (firstMatch) {
+      selected.push(firstMatch);
+      selectedIds.add(firstMatch.id);
+    }
+  }
+
+  for (const { tutorial } of ranked) {
+    if (selected.length >= Math.max(limit, requiredApplications.size)) break;
+    if (!selectedIds.has(tutorial.id)) {
+      selected.push(tutorial);
+      selectedIds.add(tutorial.id);
+    }
+  }
+
+  return selected;
 }
 
 export function matchTutorialsForStage(
