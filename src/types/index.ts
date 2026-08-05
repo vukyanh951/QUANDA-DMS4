@@ -2,6 +2,25 @@ export type Locale = "en" | "vi";
 
 export type TutorialLanguage = Locale | "either";
 
+export type CalendarTaskCategory =
+  | "sage"
+  | "peach"
+  | "lavender"
+  | "sky"
+  | "butter";
+
+export interface CalendarTask {
+  id: string;
+  title: string;
+  deadline: string;
+  category: CalendarTaskCategory;
+  source: "manual" | "roadmap";
+  done: boolean;
+  createdAt: string;
+  roadmapId?: string;
+  stageId?: string;
+}
+
 export type TargetQuality = "basic" | "portfolio" | "unsure";
 
 export type OutputType =

@@ -190,6 +190,10 @@ export async function POST(request: NextRequest) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 25_000);
   try {
+    const supportedApplicationIds =
+      roadmapRequest.requiredApplications.length > 0
+        ? roadmapRequest.requiredApplications
+        : applications.map((application) => application.id);
     const prompt = buildRoadmapPrompt({
       request: roadmapRequest,
       daysRemaining: getDaysRemaining(roadmapRequest.deadline),
@@ -199,7 +203,7 @@ export async function POST(request: NextRequest) {
         roadmapRequest.daysPerWeek,
       ),
       candidateTutorials: selectCandidateTutorials(roadmapRequest),
-      supportedApplicationIds: applications.map((application) => application.id),
+      supportedApplicationIds,
     });
 
     const originalOutput = await callGoogleAiForRoadmap(

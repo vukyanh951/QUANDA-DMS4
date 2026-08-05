@@ -509,13 +509,13 @@
   },
   {
     "id": "audacity-noise-reduction-en",
-    "title": { "en": "Remove Background Noise in Audacity 3.7.7", "vi": "Khử tạp âm trong Audacity 3.7.7" },
-    "creator": "Dewi Jenkins",
-    "url": "https://www.youtube.com/watch?v=ruxQhcWmYhQ",
-    "youtubeVideoId": "ruxQhcWmYhQ",
+    "title": { "en": "Audacity Noise Reduction: Step-by-Step Guide", "vi": "Khử tạp âm trong Audacity từng bước" },
+    "creator": "Tom Ward • Audio Instructor",
+    "url": "https://www.youtube.com/watch?v=eAo02yhQBgg",
+    "youtubeVideoId": "eAo02yhQBgg",
     "language": "en", "applicationId": "audacity",
     "topics": ["noise reduction", "background noise", "audio cleanup", "voice", "khử tạp âm", "tiếng ồn", "làm sạch âm thanh"],
-    "level": "beginner", "durationMinutes": 7, "publishedAt": "2026-03-21", "versionLabel": "Audacity 3.7.7", "verifiedAt": "2026-08-03", "sourceType": "video"
+    "level": "beginner", "durationMinutes": 2, "publishedAt": "2025-10-02", "versionLabel": "Audacity 3.x", "verifiedAt": "2026-08-05", "sourceType": "video"
   },
   {
     "id": "audacity-recording-vi",

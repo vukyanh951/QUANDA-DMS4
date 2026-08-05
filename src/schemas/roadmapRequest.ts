@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { applicationById } from "@/src/data/applications";
 
 export const RoadmapRequestSchema = z.object({
   interfaceLanguage: z.enum(["en", "vi"]),
@@ -16,7 +17,13 @@ export const RoadmapRequestSchema = z.object({
   hoursPerDay: z.coerce.number().min(0.5).max(12),
   daysPerWeek: z.coerce.number().int().min(1).max(7),
   tutorialLanguage: z.enum(["en", "vi", "either"]),
-  requiredApplications: z.array(z.string()).max(10),
+  requiredApplications: z
+    .array(z.string())
+    .max(10)
+    .refine(
+      (ids) => ids.every((id) => Boolean(applicationById[id])),
+      "applications",
+    ),
   outputType: z.enum(["video", "3d", "graphic", "uiux", "audio", "photo", "other"]),
   targetQuality: z.enum(["basic", "portfolio", "unsure"]),
 });

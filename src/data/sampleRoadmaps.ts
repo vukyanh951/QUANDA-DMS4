@@ -11,10 +11,11 @@ import type {
   RoadmapStage,
 } from "@/src/types";
 import { fillTutorialIds } from "@/src/lib/tutorialMatcher";
+import { applicationById } from "@/src/data/applications";
 
-type SampleKind = "blender" | "figma" | "davinci";
+type SampleKind = "blender" | "figma" | "davinci" | "generic";
 
-const stages: Record<SampleKind, Record<Locale, RoadmapStage[]>> = {
+const stages: Record<Exclude<SampleKind, "generic">, Record<Locale, RoadmapStage[]>> = {
   blender: {
     en: [
       stage("brief", 1, "Lock the story and deliverable", "Define the product, message, and 20-second shot list.", "A short plan prevents expensive changes after modelling starts.", null, "Reference selection and shot planning", ["Write a one-sentence product message", "Collect 6–10 visual references", "Sketch a three-shot sequence"], 30, 60),
@@ -100,8 +101,205 @@ function stage(
   };
 }
 
+function fallbackApplicationIds(request: RoadmapRequest): string[] {
+  const selected = request.requiredApplications.filter((id) => applicationById[id]);
+  if (selected.length > 0) return [...new Set(selected)].slice(0, 5);
+
+  const inferredByOutput: Partial<Record<RoadmapRequest["outputType"], string>> = {
+    video: "davinci-resolve",
+    "3d": "blender",
+    graphic: "illustrator",
+    uiux: "figma",
+    audio: "audacity",
+    photo: "photoshop",
+  };
+  const inferred = inferredByOutput[request.outputType];
+  return inferred ? [inferred] : ["photoshop"];
+}
+
+function createGenericStages(
+  request: RoadmapRequest,
+  locale: Locale,
+): RoadmapStage[] {
+  const applicationIds = fallbackApplicationIds(request);
+  const firstApplication = applicationById[applicationIds[0]];
+  const lastApplication = applicationById[applicationIds.at(-1)!];
+  const result: RoadmapStage[] = [];
+
+  const addStage = (
+    id: string,
+    title: string,
+    goal: string,
+    why: string,
+    applicationId: string,
+    skill: string,
+    tasks: string[],
+    learningMinutes: number,
+    productionMinutes: number,
+  ) => {
+    result.push(
+      stage(
+        id,
+        result.length + 1,
+        title,
+        goal,
+        why,
+        applicationId,
+        skill,
+        tasks,
+        learningMinutes,
+        productionMinutes,
+        result.length > 0 ? [result[result.length - 1].id] : [],
+      ),
+    );
+  };
+
+  if (locale === "vi") {
+    addStage(
+      "scope",
+      "Chốt phạm vi và thiết lập dự án",
+      `Chuyển đề bài thành danh sách đầu ra rõ ràng và tạo tệp làm việc trong ${firstApplication.name}.`,
+      "Phạm vi rõ ràng giúp tránh học hoặc làm những phần không cần thiết.",
+      firstApplication.id,
+      `Không gian làm việc và thiết lập tệp trong ${firstApplication.name}`,
+      [
+        "Liệt kê tiêu chí bắt buộc của sản phẩm cuối",
+        "Thu thập tài liệu tham chiếu phù hợp",
+        "Tạo cấu trúc tệp và quy ước đặt tên",
+      ],
+      45,
+      60,
+    );
+
+    applicationIds.forEach((applicationId) => {
+      const application = applicationById[applicationId];
+      addStage(
+        `build-${application.id}`,
+        `Tạo phần chính bằng ${application.name}`,
+        `Hoàn thành một bản nháp đầy đủ bằng ${application.name} để có thể xem và góp ý.`,
+        "Bản nháp hoàn chỉnh giúp phát hiện vấn đề sớm hơn so với trau chuốt từng chi tiết riêng lẻ.",
+        application.id,
+        application.commonUses.slice(0, 2).join(" và "),
+        [
+          "Làm phần quan trọng nhất trước",
+          "Giữ cấu trúc có thể chỉnh sửa và không phá hủy",
+          "Xuất một bản xem thử để kiểm tra",
+        ],
+        75,
+        180,
+      );
+    });
+
+    addStage(
+      "refine",
+      "Tinh chỉnh và kiểm tra chất lượng",
+      "Sửa các vấn đề ảnh hưởng trực tiếp đến độ rõ ràng, tính nhất quán và yêu cầu bài nộp.",
+      "Một lượt kiểm tra có thứ tự giúp dùng thời gian còn lại cho thay đổi có tác động lớn nhất.",
+      lastApplication.id,
+      `Kiểm tra chất lượng trong ${lastApplication.name}`,
+      [
+        "So sánh bản nháp với tiêu chí bắt buộc",
+        "Sửa ba vấn đề có tác động lớn nhất",
+        "Kiểm tra lại kích thước, màu sắc, âm thanh hoặc chuyển động liên quan",
+      ],
+      45,
+      120,
+    );
+    addStage(
+      "deliver",
+      "Xuất tệp và xác minh bài nộp",
+      "Tạo tệp cuối đúng định dạng và kiểm tra trên một thiết bị hoặc ứng dụng khác.",
+      "Lỗi xuất tệp dễ xử lý hơn khi vẫn còn thời gian trước hạn chót.",
+      lastApplication.id,
+      `Thiết lập xuất và bàn giao trong ${lastApplication.name}`,
+      [
+        "Xuất đúng định dạng và độ phân giải yêu cầu",
+        "Mở và xem toàn bộ tệp đã xuất",
+        "Lưu bản nguồn cùng một bản sao dự phòng",
+      ],
+      30,
+      75,
+    );
+  } else {
+    addStage(
+      "scope",
+      "Lock the scope and set up the project",
+      `Turn the brief into a concrete delivery checklist and create the working file in ${firstApplication.name}.`,
+      "A clear scope prevents time being spent on techniques the final submission does not need.",
+      firstApplication.id,
+      `${firstApplication.name} workspace and file setup`,
+      [
+        "List the non-negotiable delivery criteria",
+        "Collect focused references",
+        "Create a clean file structure and naming convention",
+      ],
+      45,
+      60,
+    );
+
+    applicationIds.forEach((applicationId) => {
+      const application = applicationById[applicationId];
+      addStage(
+        `build-${application.id}`,
+        `Build the core work in ${application.name}`,
+        `Complete a reviewable first draft in ${application.name}.`,
+        "A complete draft reveals workflow problems earlier than polishing isolated details.",
+        application.id,
+        application.commonUses.slice(0, 2).join(" and "),
+        [
+          "Build the highest-priority part first",
+          "Keep the source structured and editable",
+          "Export a quick review version",
+        ],
+        75,
+        180,
+      );
+    });
+
+    addStage(
+      "refine",
+      "Refine and quality-check the draft",
+      "Fix the issues that most affect clarity, consistency, and the submission criteria.",
+      "A ranked review keeps the remaining time focused on high-impact improvements.",
+      lastApplication.id,
+      `Quality review in ${lastApplication.name}`,
+      [
+        "Compare the draft with every required criterion",
+        "Fix the three highest-impact issues",
+        "Recheck the relevant dimensions, colour, sound, or motion",
+      ],
+      45,
+      120,
+    );
+    addStage(
+      "deliver",
+      "Export and verify the submission",
+      "Create the required final file and verify it in another application or device.",
+      "Export problems are easiest to fix while time remains before the deadline.",
+      lastApplication.id,
+      `Export and delivery settings in ${lastApplication.name}`,
+      [
+        "Export the required format and resolution",
+        "Open and review the complete exported file",
+        "Keep the source file and one backup copy",
+      ],
+      30,
+      75,
+    );
+  }
+
+  return result;
+}
+
 function sampleKindFor(request: RoadmapRequest): SampleKind {
   const text = `${request.projectBrief} ${request.requiredApplications.join(" ")}`.toLowerCase();
+  if (request.requiredApplications.length > 0) {
+    const selected = new Set(request.requiredApplications);
+    if (selected.size === 1 && selected.has("figma")) return "figma";
+    if (selected.size === 1 && selected.has("davinci-resolve")) return "davinci";
+    if (selected.size === 1 && selected.has("blender")) return "blender";
+    return "generic";
+  }
   if (text.includes("figma") || request.outputType === "uiux") return "figma";
   if (
     text.includes("davinci") ||
@@ -110,16 +308,28 @@ function sampleKindFor(request: RoadmapRequest): SampleKind {
   ) {
     return "davinci";
   }
-  return "blender";
+  if (text.includes("blender") || request.outputType === "3d") return "blender";
+  return "generic";
 }
 
 export function createSampleRoadmap(request: RoadmapRequest): RoadmapResponse {
   const kind = sampleKindFor(request);
   const locale = request.interfaceLanguage;
-  const selectedStages = stages[kind][locale].map((item) => ({
-    ...item,
-    tutorialIds: fillTutorialIds(item, request.tutorialLanguage),
-  }));
+  const allowedApplications = new Set(request.requiredApplications);
+  const sourceStages =
+    kind === "generic" ? createGenericStages(request, locale) : stages[kind][locale];
+  const selectedStages = sourceStages.map((item) => {
+    const normalizedItem =
+      allowedApplications.size > 0 &&
+      item.applicationId &&
+      !allowedApplications.has(item.applicationId)
+        ? { ...item, applicationId: null, tutorialIds: [] }
+        : item;
+    return {
+      ...normalizedItem,
+      tutorialIds: fillTutorialIds(normalizedItem, request.tutorialLanguage),
+    };
+  });
   const total = selectedStages.reduce(
     (sum, item) => sum + item.learningMinutes + item.productionMinutes,
     0,
@@ -135,11 +345,13 @@ export function createSampleRoadmap(request: RoadmapRequest): RoadmapResponse {
       blender: "20-second product animation roadmap",
       figma: "Mobile app prototype roadmap",
       davinci: "Short video editing roadmap",
+      generic: `${applicationById[fallbackApplicationIds(request)[0]].name} project roadmap`,
     },
     vi: {
       blender: "Lộ trình làm hoạt hình sản phẩm 20 giây",
       figma: "Lộ trình làm bản mẫu ứng dụng di động",
       davinci: "Lộ trình dựng video ngắn",
+      generic: `Lộ trình dự án với ${applicationById[fallbackApplicationIds(request)[0]].name}`,
     },
   };
   const summaries = {
@@ -150,6 +362,8 @@ export function createSampleRoadmap(request: RoadmapRequest): RoadmapResponse {
         "A compact product-design workflow that prioritises one testable user journey, a reusable UI system, and a polished interactive prototype.",
       davinci:
         "A story-first editing plan that moves from organised selects to a complete rough cut, clean sound, consistent colour, and a verified export.",
+      generic:
+        "A practical path from project setup to a complete draft, focused refinement, and a verified final delivery in the selected application.",
     },
     vi: {
       blender:
@@ -158,6 +372,8 @@ export function createSampleRoadmap(request: RoadmapRequest): RoadmapResponse {
         "Quy trình thiết kế sản phẩm gọn, ưu tiên một hành trình người dùng có thể kiểm thử, hệ thống giao diện tái sử dụng và bản mẫu tương tác chỉn chu.",
       davinci:
         "Kế hoạch dựng ưu tiên câu chuyện, đi từ việc sắp xếp cảnh quay đến bản dựng nháp hoàn chỉnh, âm thanh rõ, màu nhất quán và tệp xuất đã kiểm tra.",
+      generic:
+        "Lộ trình thực tế từ thiết lập dự án đến bản nháp hoàn chỉnh, tinh chỉnh có trọng tâm và tệp cuối đã được xác minh trong ứng dụng đã chọn.",
     },
   };
   const assumptions = {
@@ -179,7 +395,11 @@ export function createSampleRoadmap(request: RoadmapRequest): RoadmapResponse {
         : [
             "Hãy dùng tài sản đơn giản hơn, bỏ hiệu ứng nâng cao và ưu tiên kết xuất chất lượng nháp trước.",
           ]
-      : [];
+      : request.requiredApplications.length > 5
+        ? locale === "en"
+          ? ["The fallback plan focuses on the first five selected applications so it can stay within eight concrete stages."]
+          : ["Lộ trình dự phòng tập trung vào năm ứng dụng đầu tiên để giữ kế hoạch trong tối đa tám giai đoạn cụ thể."]
+        : [];
 
   const plannedPerItem = Math.ceil(total / Math.min(getDaysRemaining(request.deadline), 7));
   return {

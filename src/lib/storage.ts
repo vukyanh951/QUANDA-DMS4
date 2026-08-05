@@ -1,12 +1,19 @@
 import { RoadmapRequestSchema } from "@/src/schemas/roadmapRequest";
 import { RoadmapResponseSchema } from "@/src/schemas/roadmapResponse";
-import type { Locale, RoadmapRequest, RoadmapResponse } from "@/src/types";
+import { isCalendarTask } from "@/src/lib/calendar";
+import type {
+  CalendarTask,
+  Locale,
+  RoadmapRequest,
+  RoadmapResponse,
+} from "@/src/types";
 
 export const STORAGE_KEYS = {
   language: "quanda:v1:language",
   draft: "quanda:v1:draft",
   roadmap: "quanda:v1:last-roadmap",
   completion: "quanda:v1:completion",
+  calendar: "quanda:v1:calendar-tasks",
 } as const;
 
 function safeParse(value: string | null): unknown {
@@ -89,6 +96,23 @@ export function writeCompletion(
     storage.setItem(STORAGE_KEYS.completion, JSON.stringify(completion));
   } catch {
     // Completion persistence is a progressive enhancement.
+  }
+}
+
+export function readCalendarTasks(storage: Storage): CalendarTask[] {
+  const value = safeParse(storage.getItem(STORAGE_KEYS.calendar));
+  if (!Array.isArray(value)) return [];
+  return value.filter(isCalendarTask);
+}
+
+export function writeCalendarTasks(
+  storage: Storage,
+  tasks: CalendarTask[],
+): void {
+  try {
+    storage.setItem(STORAGE_KEYS.calendar, JSON.stringify(tasks));
+  } catch {
+    // Calendar tasks remain usable in memory when storage is unavailable.
   }
 }
 

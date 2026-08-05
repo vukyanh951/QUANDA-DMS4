@@ -6,6 +6,7 @@ import type { Translation } from "@/src/i18n/translations";
 import { RoadmapRequestSchema } from "@/src/schemas/roadmapRequest";
 import type { RoadmapRequest } from "@/src/types";
 import { applications } from "@/src/data/applications";
+import { toLocalDateKey } from "@/src/lib/date";
 
 interface ProjectBriefFormProps {
   value: RoadmapRequest;
@@ -127,7 +128,7 @@ export function ProjectBriefForm({
             <input
               aria-invalid={Boolean(errors.deadline)}
               id="deadline"
-              min={new Date().toISOString().split("T")[0]}
+              min={toLocalDateKey(new Date())}
               onChange={(event) => update("deadline", event.target.value)}
               type="date"
               value={value.deadline}

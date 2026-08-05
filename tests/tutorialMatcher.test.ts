@@ -41,6 +41,10 @@ describe("tutorial catalogue matching", () => {
       .toBeNull();
     expect(extractYouTubeVideoId("https://example.com/watch?v=ILqOWe3zAbk"))
       .toBeNull();
+    expect(
+      tutorials.find((tutorial) => tutorial.id === "audacity-noise-reduction-en")
+        ?.youtubeVideoId,
+    ).toBe("eAo02yhQBgg");
   });
 
   it("keeps only unique catalogue IDs", () => {

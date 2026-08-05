@@ -83,7 +83,8 @@ Validity rules:
 - Every stage must produce something observable; do not use a stage that only says "learn software".
 - Use positive, plausible minute estimates and keep learning separate from production.
 - The stage-time sum must approximately equal totalEstimatedMinutes.
-- Respect required applications when plausible, but do not force every known application into the plan.
+- When NORMALIZED_INPUT.requiredApplications is non-empty, use only those application IDs or null. Never substitute an unselected application.
+- When no application is required, use only IDs from SUPPORTED_APPLICATION_IDS when they are genuinely useful.
 - Explain an application's purpose in the stage goal or why text.
 - Dependencies may refer only to earlier stage IDs.
 - Choose tutorial IDs only from CANDIDATE_TUTORIALS and return at most three per stage.

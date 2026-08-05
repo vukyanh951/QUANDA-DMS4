@@ -104,6 +104,29 @@ export interface Translation {
     status: Record<"comfortable" | "tight" | "unrealistic", string>;
     priority: Record<"high" | "medium" | "low", string>;
   };
+  calendar: {
+    eyebrow: string;
+    title: string;
+    intro: string;
+    ariaLabel: string;
+    controlsLabel: string;
+    previousMonth: string;
+    nextMonth: string;
+    today: string;
+    deadlineLegend: string;
+    dayPlan: string;
+    task: string;
+    taskPlaceholder: string;
+    deadline: string;
+    add: string;
+    emptyTasks: string;
+    clearDay: string;
+    of: string;
+    complete: string;
+    taskSingular: string;
+    taskPlural: string;
+    deleteTask: string;
+  };
   loading: {
     eyebrow: string;
     title: string;
@@ -263,6 +286,30 @@ const en: Translation = {
       medium: "Medium priority",
       low: "Low priority",
     },
+  },
+  calendar: {
+    eyebrow: "Your project garden",
+    title: "Keep every deadline in view.",
+    intro:
+      "Select a day, add a task, and let the month hold the details. Everything is saved on this device.",
+    ariaLabel: "Project calendar",
+    controlsLabel: "Calendar controls",
+    previousMonth: "Previous month",
+    nextMonth: "Next month",
+    today: "Today",
+    deadlineLegend: "Task deadline",
+    dayPlan: "Day plan",
+    task: "Task",
+    taskPlaceholder: "What needs to get done?",
+    deadline: "Deadline",
+    add: "Add to calendar",
+    emptyTasks: "No tasks yet. Add a small, concrete next step above.",
+    clearDay: "A clear day — add something when you are ready.",
+    of: "of",
+    complete: "complete",
+    taskSingular: "task",
+    taskPlural: "tasks",
+    deleteTask: "Delete task",
   },
   loading: {
     eyebrow: "Building your path",
@@ -431,6 +478,30 @@ const vi: Translation = {
       medium: "Ưu tiên vừa",
       low: "Ưu tiên thấp",
     },
+  },
+  calendar: {
+    eyebrow: "Khu vườn dự án",
+    title: "Nhìn rõ mọi hạn chót.",
+    intro:
+      "Chọn một ngày, thêm công việc và để lịch tháng lưu giữ chi tiết. Mọi thứ được lưu trên thiết bị này.",
+    ariaLabel: "Lịch dự án",
+    controlsLabel: "Điều khiển lịch",
+    previousMonth: "Tháng trước",
+    nextMonth: "Tháng sau",
+    today: "Hôm nay",
+    deadlineLegend: "Hạn công việc",
+    dayPlan: "Kế hoạch trong ngày",
+    task: "Công việc",
+    taskPlaceholder: "Bạn cần hoàn thành việc gì?",
+    deadline: "Hạn chót",
+    add: "Thêm vào lịch",
+    emptyTasks: "Chưa có công việc. Hãy thêm một bước nhỏ và cụ thể ở trên.",
+    clearDay: "Ngày này còn trống — hãy thêm việc khi bạn sẵn sàng.",
+    of: "trên",
+    complete: "đã hoàn thành",
+    taskSingular: "công việc",
+    taskPlural: "công việc",
+    deleteTask: "Xóa công việc",
   },
   loading: {
     eyebrow: "Đang xây dựng lộ trình",
