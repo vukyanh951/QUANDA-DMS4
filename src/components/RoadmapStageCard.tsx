@@ -22,8 +22,34 @@ export function RoadmapStageCard({
   tutorials,
   onToggle,
 }: RoadmapStageCardProps) {
+  if (isComplete) {
+    return (
+      <article className="stage-card stage-card-collapsed is-complete">
+        <div className="stage-rail" aria-hidden="true">
+          <span>{String(stage.order).padStart(2, "0")}</span>
+        </div>
+        <div className="stage-collapsed-content">
+          <div>
+            <p className="stage-kicker">{t.results.stage} {stage.order}</p>
+            <h3>{stage.title}</h3>
+          </div>
+          <label className="completion-control">
+            <input
+              checked
+              data-testid="stage-completion"
+              onChange={onToggle}
+              type="checkbox"
+            />
+            <span aria-hidden="true"><Check size={15} /></span>
+            {t.results.completed}
+          </label>
+        </div>
+      </article>
+    );
+  }
+
   return (
-    <article className={`stage-card ${isComplete ? "is-complete" : ""}`}>
+    <article className="stage-card">
       <div className="stage-rail" aria-hidden="true">
         <span>{String(stage.order).padStart(2, "0")}</span>
       </div>
@@ -35,13 +61,13 @@ export function RoadmapStageCard({
           </div>
           <label className="completion-control">
             <input
-              checked={isComplete}
+              checked={false}
               data-testid="stage-completion"
               onChange={onToggle}
               type="checkbox"
             />
             <span aria-hidden="true"><Check size={15} /></span>
-            {isComplete ? t.results.completed : t.results.markComplete}
+            {t.results.markComplete}
           </label>
         </div>
 
@@ -94,9 +120,13 @@ export function RoadmapStageCard({
           </div>
           <div className="tutorial-list">
             <h4>{t.results.tutorials}</h4>
-            {tutorials.map((tutorial) => (
-              <TutorialCard key={tutorial.id} t={t} tutorial={tutorial} />
-            ))}
+            {tutorials.length > 0 ? (
+              tutorials.map((tutorial) => (
+                <TutorialCard key={tutorial.id} t={t} tutorial={tutorial} />
+              ))
+            ) : (
+              <p className="no-tutorial">{t.results.noTutorial}</p>
+            )}
           </div>
         </div>
       </div>

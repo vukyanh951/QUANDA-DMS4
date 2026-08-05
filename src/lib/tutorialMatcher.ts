@@ -12,13 +12,16 @@ export interface Tutorial {
   title: Record<Locale, string>;
   creator: string;
   url: string;
+  youtubeVideoId: string;
   language: Locale;
   applicationId: string;
   topics: string[];
   level: "beginner" | "intermediate" | "advanced";
   durationMinutes: number | null;
+  publishedAt: string;
+  versionLabel: string;
   verifiedAt: string;
-  sourceType: "video" | "article" | "course";
+  sourceType: "video";
 }
 
 export interface TutorialRecommendation {
@@ -26,15 +29,39 @@ export interface TutorialRecommendation {
   title: string;
   creator: string;
   url: string;
+  thumbnailUrl: string;
   language: Locale;
   applicationName: string;
   level: Tutorial["level"];
   durationMinutes: number | null;
+  versionLabel: string;
   sourceType: Tutorial["sourceType"];
-  badge: "curated" | "search";
+  badge: "youtube";
 }
 
-export const tutorials = tutorialsData as Tutorial[];
+export function extractYouTubeVideoId(url: string): string | null {
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname.replace(/^www\./, "");
+    let videoId: string | null = null;
+
+    if (host === "youtube.com" && parsed.pathname === "/watch") {
+      videoId = parsed.searchParams.get("v");
+    } else if (host === "youtu.be") {
+      videoId = parsed.pathname.slice(1).split("/")[0] || null;
+    }
+
+    return videoId && /^[A-Za-z0-9_-]{11}$/.test(videoId) ? videoId : null;
+  } catch {
+    return null;
+  }
+}
+
+export function isDirectYouTubeVideo(tutorial: Tutorial): boolean {
+  return extractYouTubeVideoId(tutorial.url) === tutorial.youtubeVideoId;
+}
+
+export const tutorials = (tutorialsData as Tutorial[]).filter(isDirectYouTubeVideo);
 
 const tutorialById = new Map(tutorials.map((tutorial) => [tutorial.id, tutorial]));
 
@@ -69,8 +96,13 @@ export function selectCandidateTutorials(
   );
   const requiredApplications = new Set(request.requiredApplications);
 
-  return tutorials
-    .filter((tutorial) => languageMatches(tutorial, request.tutorialLanguage))
+  const ranked = tutorials
+    .filter(
+      (tutorial) =>
+        languageMatches(tutorial, request.tutorialLanguage) &&
+        (requiredApplications.size === 0 ||
+          requiredApplications.has(tutorial.applicationId)),
+    )
     .map((tutorial) => {
       let score = 0;
       if (requiredApplications.has(tutorial.applicationId)) score += 8;
@@ -82,24 +114,54 @@ export function selectCandidateTutorials(
       if (tutorial.level === "beginner") score += 1;
       return { tutorial, score };
     })
-    .sort((a, b) => b.score - a.score || a.tutorial.id.localeCompare(b.tutorial.id))
-    .slice(0, limit)
-    .map(({ tutorial }) => tutorial);
+    .sort((a, b) => b.score - a.score || a.tutorial.id.localeCompare(b.tutorial.id));
+
+  if (requiredApplications.size === 0) {
+    return ranked.slice(0, limit).map(({ tutorial }) => tutorial);
+  }
+
+  const selected: Tutorial[] = [];
+  const selectedIds = new Set<string>();
+  for (const applicationId of requiredApplications) {
+    const firstMatch = ranked.find(
+      ({ tutorial }) => tutorial.applicationId === applicationId,
+    )?.tutorial;
+    if (firstMatch) {
+      selected.push(firstMatch);
+      selectedIds.add(firstMatch.id);
+    }
+  }
+
+  for (const { tutorial } of ranked) {
+    if (selected.length >= Math.max(limit, requiredApplications.size)) break;
+    if (!selectedIds.has(tutorial.id)) {
+      selected.push(tutorial);
+      selectedIds.add(tutorial.id);
+    }
+  }
+
+  return selected;
 }
 
 export function matchTutorialsForStage(
   stage: RoadmapStage,
   preference: TutorialLanguage,
   limit = 3,
+  excludedIds: ReadonlySet<string> = new Set(),
 ): Tutorial[] {
   const stageTokens = new Set(
     tokenize(`${stage.title} ${stage.goal} ${stage.skillToLearn} ${stage.tasks.join(" ")}`),
   );
 
-  return tutorials
-    .filter((tutorial) => languageMatches(tutorial, preference))
+  const scored = tutorials
+    .filter(
+      (tutorial) =>
+        tutorial.applicationId === stage.applicationId &&
+        languageMatches(tutorial, preference) &&
+        !excludedIds.has(tutorial.id),
+    )
     .map((tutorial) => {
-      let score = tutorial.applicationId === stage.applicationId ? 10 : 0;
+      let score = 0;
       for (const topic of tutorial.topics) {
         for (const token of tokenize(topic)) {
           if (stageTokens.has(token)) score += 2;
@@ -107,8 +169,10 @@ export function matchTutorialsForStage(
       }
       return { tutorial, score };
     })
-    .filter(({ score }) => score > 0)
-    .sort((a, b) => b.score - a.score || a.tutorial.id.localeCompare(b.tutorial.id))
+    .sort((a, b) => b.score - a.score || a.tutorial.id.localeCompare(b.tutorial.id));
+  const relevant = scored.filter(({ score }) => score > 0);
+
+  return (relevant.length > 0 ? relevant : scored)
     .slice(0, limit)
     .map(({ tutorial }) => tutorial);
 }
@@ -116,10 +180,47 @@ export function matchTutorialsForStage(
 export function fillTutorialIds(
   stage: RoadmapStage,
   preference: TutorialLanguage,
+  excludedIds: ReadonlySet<string> = new Set(),
+  limit = 3,
 ): string[] {
-  const valid = validateTutorialIds(stage.tutorialIds);
-  if (valid.length >= 1) return valid.slice(0, 3);
-  return matchTutorialsForStage(stage, preference).map((tutorial) => tutorial.id);
+  const valid = validateTutorialIds(stage.tutorialIds).filter((id) => {
+    const tutorial = tutorialById.get(id);
+    return Boolean(
+        tutorial &&
+        tutorial.applicationId === stage.applicationId &&
+        languageMatches(tutorial, preference) &&
+        !excludedIds.has(id),
+    );
+  });
+  const matched = matchTutorialsForStage(
+    stage,
+    preference,
+    limit,
+    new Set([...excludedIds, ...valid]),
+  ).map((tutorial) => tutorial.id);
+
+  return [...valid, ...matched].slice(0, limit);
+}
+
+function toRecommendation(
+  tutorial: Tutorial,
+  locale: Locale,
+): TutorialRecommendation {
+  return {
+    id: tutorial.id,
+    title: tutorial.title[locale],
+    creator: tutorial.creator,
+    url: tutorial.url,
+    thumbnailUrl: `https://i.ytimg.com/vi/${tutorial.youtubeVideoId}/hqdefault.jpg`,
+    language: tutorial.language,
+    applicationName:
+      applicationById[tutorial.applicationId]?.name ?? tutorial.applicationId,
+    level: tutorial.level,
+    durationMinutes: tutorial.durationMinutes,
+    versionLabel: tutorial.versionLabel,
+    sourceType: tutorial.sourceType,
+    badge: "youtube",
+  };
 }
 
 export function resolveTutorialRecommendations(
@@ -128,59 +229,45 @@ export function resolveTutorialRecommendations(
   locale: Locale,
 ): TutorialRecommendation[] {
   const validIds = fillTutorialIds(stage, preference);
-  const curated = validIds
+  return validIds
     .map((id) => tutorialById.get(id))
     .filter((tutorial): tutorial is Tutorial => Boolean(tutorial))
-    .map((tutorial) => ({
-      id: tutorial.id,
-      title: tutorial.title[locale],
-      creator: tutorial.creator,
-      url: tutorial.url,
-      language: tutorial.language,
-      applicationName:
-        applicationById[tutorial.applicationId]?.name ?? tutorial.applicationId,
-      level: tutorial.level,
-      durationMinutes: tutorial.durationMinutes,
-      sourceType: tutorial.sourceType,
-      badge: "curated" as const,
-    }));
+    .map((tutorial) => toRecommendation(tutorial, locale));
+}
 
-  if (curated.length > 0) return curated;
+export function resolveRoadmapTutorialRecommendations(
+  stages: RoadmapStage[],
+  preference: TutorialLanguage,
+  locale: Locale,
+): Record<string, TutorialRecommendation[]> {
+  const recommendations: Record<string, TutorialRecommendation[]> = {};
+  const usedIds = new Set<string>();
 
-  const applicationName = stage.applicationId
-    ? applicationById[stage.applicationId]?.name ?? stage.applicationId
-    : "";
-  const requestedLanguage =
-    preference === "vi"
-      ? "Vietnamese"
-      : preference === "en"
-        ? "English"
-        : "";
-  const query = [
-    applicationName,
-    "beginner",
-    stage.skillToLearn,
-    "tutorial",
-    requestedLanguage,
-  ]
-    .filter(Boolean)
-    .join(" ");
+  stages.forEach((stage, index) => {
+    if (!stage.applicationId) {
+      recommendations[stage.id] = [];
+      return;
+    }
 
-  return [
-    {
-      id: `search-${stage.id}`,
-      title:
-        locale === "en"
-          ? `Search for: ${query}`
-          : `Tìm kiếm: ${query}`,
-      creator: "YouTube",
-      url: `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`,
-      language: preference === "vi" ? "vi" : "en",
-      applicationName: applicationName || "—",
-      level: "beginner",
-      durationMinutes: null,
-      sourceType: "video",
-      badge: "search",
-    },
-  ];
+    const remainingStagesForApplication = stages
+      .slice(index + 1)
+      .filter((candidate) => candidate.applicationId === stage.applicationId)
+      .length;
+    const availableCount = tutorials.filter(
+      (tutorial) =>
+        tutorial.applicationId === stage.applicationId &&
+        languageMatches(tutorial, preference) &&
+        !usedIds.has(tutorial.id),
+    ).length;
+    const limit = availableCount > remainingStagesForApplication ? 2 : 1;
+    const ids = fillTutorialIds(stage, preference, usedIds, limit);
+
+    ids.forEach((id) => usedIds.add(id));
+    recommendations[stage.id] = ids
+      .map((id) => tutorialById.get(id))
+      .filter((tutorial): tutorial is Tutorial => Boolean(tutorial))
+      .map((tutorial) => toRecommendation(tutorial, locale));
+  });
+
+  return recommendations;
 }

@@ -11,7 +11,7 @@ The app is designed for students and early-career creatives who need to learn un
 - Curated tutorial recommendations
 - English and Vietnamese interface modes
 - Saved drafts, roadmap progress, and stage completion in the browser
-- Optional Qwen-generated roadmaps with a deterministic demo fallback
+- Optional Google Gemini-generated roadmaps with a deterministic demo fallback
 
 ## 2. MVP scope
 
@@ -39,36 +39,33 @@ Open `http://localhost:3000`.
 
 | Variable | Required | Purpose |
 | --- | --- | --- |
-| `DASHSCOPE_API_KEY` | No | Server-only Alibaba Cloud Model Studio API key. With no key, QUANDA uses demo mode. |
-| `QWEN_BASE_URL` | No | OpenAI-compatible Model Studio endpoint. Defaults to the international Singapore endpoint. |
-| `QWEN_MODEL` | No | Model name. Defaults to `qwen3.5-flash`. |
-| `QWEN_ENABLE_THINKING` | No | Set to `true` to enable supported thinking mode; defaults to `false`. |
+| `GEMINI_API_KEY` | No | Server-only Google AI Studio API key. With no key, QUANDA uses demo mode. |
+| `GEMINI_BASE_URL` | No | Gemini API endpoint. Defaults to Google's `v1beta` endpoint. |
+| `GEMINI_MODEL` | No | Model name. Defaults to `gemini-3.1-flash-lite`. |
 | `NEXT_PUBLIC_APP_URL` | No | Public app origin for local documentation and deployment configuration. |
 
-Never prefix the DashScope key with `NEXT_PUBLIC_` and never place it in client-side code. `.env.local` is ignored by Git.
+Never prefix the Gemini key with `NEXT_PUBLIC_` and never place it in client-side code. `.env.local` is ignored by Git.
 
-## 6. Qwen Model Studio setup
+## 6. Google AI Studio setup
 
-1. Create or sign in to an Alibaba Cloud account with Model Studio available in the intended region.
-2. Enable Model Studio access and create an API key in its console.
-3. Choose the OpenAI-compatible base URL for the same region as the key.
-4. Copy `.env.example` to `.env.local` and set `DASHSCOPE_API_KEY`.
-5. Keep `QWEN_MODEL=qwen3.5-flash`, or change it only to a compatible model available to the account.
-6. Restart the development server.
+1. Open Google AI Studio and create an API key for the project that will run QUANDA.
+2. Copy `.env.example` to `.env.local` and set `GEMINI_API_KEY`.
+3. Keep `GEMINI_MODEL=gemini-3.1-flash-lite`, or change it only to a compatible Gemini model available to the project.
+4. Restart the development server.
 
-The default international endpoint is:
+The default Gemini API endpoint is:
 
 ```text
-https://dashscope-intl.aliyuncs.com/compatible-mode/v1
+https://generativelanguage.googleapis.com/v1beta
 ```
 
-API access, models, quotas, regional availability, and billing depend on the Alibaba Cloud Model Studio account. QUANDA does not assume that Qwen usage is free.
+API access, models, quotas, regional availability, and billing depend on the Google Cloud project connected to the AI Studio key. QUANDA does not assume that Gemini usage is free.
 
-The browser sends only the validated roadmap request to `/api/roadmap`. The server route reads the key, calls Model Studio, validates the JSON, attempts one repair when necessary, and returns normalized data. The key is never included in browser code or API responses.
+The browser sends only the validated roadmap request to `/api/roadmap`. The server route reads the key, calls the Gemini API, validates the JSON, attempts one repair when necessary, and returns normalized data. The key is never included in browser code or API responses.
 
 ## 7. Demo mode
 
-When `DASHSCOPE_API_KEY` is absent, `/api/roadmap` returns a deterministic roadmap based on the project type. The UI labels this as demo mode. If a configured AI request times out, fails, or returns invalid JSON after one repair attempt, QUANDA returns the same safe fallback shape with a bilingual notice.
+When `GEMINI_API_KEY` is absent, `/api/roadmap` returns a deterministic roadmap based on the project type. The UI labels this as demo mode. If a configured AI request times out, fails, or returns invalid JSON after one repair attempt, QUANDA returns the same safe fallback shape with a bilingual notice.
 
 ## 8. Add tutorials
 
@@ -76,11 +73,11 @@ Edit `src/data/tutorials.json`. Each entry needs:
 
 - A unique `id`
 - English and Vietnamese display titles
-- Creator, verified URL, and content language
+- Creator, verified direct YouTube URL, matching `youtubeVideoId`, and content language
 - A supported `applicationId`
 - Search topics, level, duration, verification date, and source type
 
-Only catalogue IDs may be rendered as curated links. If no catalogue item matches, QUANDA creates a clearly labelled YouTube search suggestion rather than inventing a tutorial URL. Verify every new link before committing it.
+Only catalogue IDs may be rendered as tutorial links. Every catalogue entry must be a verified, direct YouTube video URL with a matching 11-character video ID. If no video matches, QUANDA shows an empty-state message instead of inventing a link or sending the user to search results.
 
 ## 9. Add translations
 
@@ -108,12 +105,10 @@ pnpm run test:all
 
 1. Push this repository to GitHub.
 2. Import the repository into Vercel and keep the detected Next.js framework preset.
-3. Add `DASHSCOPE_API_KEY` as a server environment variable.
-4. Add the region-matching `QWEN_BASE_URL`.
-5. Add `QWEN_MODEL=qwen3.5-flash`.
-6. Optionally add `QWEN_ENABLE_THINKING=false` and `NEXT_PUBLIC_APP_URL` with the public origin.
-7. Deploy and test the public URL in English and Vietnamese.
-8. Temporarily test without the API key, or with the upstream service unavailable, to confirm demo and fallback behaviour.
+3. Add `GEMINI_API_KEY` as a server environment variable.
+4. Optionally add `GEMINI_MODEL=gemini-3.1-flash-lite` and `NEXT_PUBLIC_APP_URL` with the public origin.
+5. Deploy and test the public URL in English and Vietnamese.
+6. Temporarily test without the API key, or with the upstream service unavailable, to confirm demo and fallback behaviour.
 
 The server endpoint uses bounded request sizes, a short in-memory rate limit, and request timeouts; it does not start background jobs.
 
@@ -122,7 +117,7 @@ The server endpoint uses bounded request sizes, a short in-memory rate limit, an
 - Browser persistence is device-local and has no account sync.
 - The in-memory rate limit is best-effort and is not shared across server instances.
 - The catalogue is intentionally small and covers the applications required by this MVP.
-- AI output quality depends on the selected Qwen model and account availability.
+- AI output quality depends on the selected Gemini model and account availability.
 - Feasibility estimates are planning guidance, not guarantees.
 - The demo templates cover Blender, Figma, and DaVinci Resolve project patterns.
 

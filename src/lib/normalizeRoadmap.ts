@@ -17,6 +17,11 @@ export function normalizeRoadmap(
   roadmap: RoadmapResponse,
   request: RoadmapRequest,
 ): RoadmapResponse {
+  const requestedApplicationIds = new Set(
+    request.requiredApplications.filter((id) => applicationIds.has(id)),
+  );
+  const allowedApplicationIds =
+    requestedApplicationIds.size > 0 ? requestedApplicationIds : applicationIds;
   const seenIds = new Set<string>();
   const stages = roadmap.stages.slice(0, 8).map((stage, index) => {
     const fallbackId = `stage-${index + 1}`;
@@ -32,7 +37,7 @@ export function normalizeRoadmap(
       id,
       order: index + 1,
       applicationId:
-        stage.applicationId && applicationIds.has(stage.applicationId)
+        stage.applicationId && allowedApplicationIds.has(stage.applicationId)
           ? stage.applicationId
           : null,
       learningMinutes: Math.max(1, Math.round(stage.learningMinutes)),

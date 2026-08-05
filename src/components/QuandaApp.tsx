@@ -4,30 +4,43 @@ import { ArrowDown, ArrowRight, BookOpenCheck, ListChecks, PencilLine } from "lu
 import { useEffect, useState } from "react";
 import { Header } from "./Header";
 import { getTranslation } from "@/src/i18n/translations";
-import type { Locale, RoadmapRequest, RoadmapResponse } from "@/src/types";
+import type {
+  CalendarTask,
+  Locale,
+  RoadmapRequest,
+  RoadmapResponse,
+} from "@/src/types";
 import { ProjectBriefForm } from "./ProjectBriefForm";
 import { RoadmapResults } from "./RoadmapResults";
+import { ProjectCalendar } from "./ProjectCalendar";
 import { createSampleRoadmap } from "@/src/data/sampleRoadmaps";
 import { LoadingRoadmap } from "./LoadingRoadmap";
 import {
   clearProjectStorage,
+  readCalendarTasks,
   readCompletion,
   readDraft,
   readLanguage,
   readRoadmap,
   writeCompletion,
+  writeCalendarTasks,
   writeDraft,
   writeLanguage,
   writeRoadmap,
 } from "@/src/lib/storage";
 import { RoadmapResponseSchema } from "@/src/schemas/roadmapResponse";
 import { trackEvent } from "@/src/lib/analytics";
+import {
+  removeRoadmapCalendarTasks,
+  syncRoadmapCalendarTasks,
+} from "@/src/lib/calendar";
+import { toLocalDateKey } from "@/src/lib/date";
 const stepIcons = [PencilLine, ListChecks, BookOpenCheck] as const;
 
 function dateFromToday(days: number) {
   const date = new Date();
   date.setDate(date.getDate() + days);
-  return date.toISOString().split("T")[0];
+  return toLocalDateKey(date);
 }
 
 function emptyForm(locale: Locale): RoadmapRequest {
@@ -54,6 +67,7 @@ export function QuandaApp({ demoMode }: QuandaAppProps) {
   const [form, setForm] = useState<RoadmapRequest>(() => emptyForm("en"));
   const [roadmap, setRoadmap] = useState<RoadmapResponse | null>(null);
   const [completion, setCompletion] = useState<Record<string, string[]>>({});
+  const [calendarTasks, setCalendarTasks] = useState<CalendarTask[]>([]);
   const [isHydrated, setIsHydrated] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -65,17 +79,28 @@ export function QuandaApp({ demoMode }: QuandaAppProps) {
       const savedLocale = readLanguage(window.localStorage);
       const savedDraft = readDraft(window.localStorage);
       const savedRoadmap = readRoadmap(window.localStorage);
+      const savedCompletion = readCompletion(window.localStorage);
+      const savedCalendarTasks = readCalendarTasks(window.localStorage);
       const restoredLocale =
         savedLocale ?? savedDraft?.interfaceLanguage ?? savedRoadmap?.language ?? "en";
+      const restoredForm = savedDraft
+        ? { ...savedDraft, interfaceLanguage: restoredLocale }
+        : emptyForm(restoredLocale);
 
       setLocale(restoredLocale);
-      setForm(
-        savedDraft
-          ? { ...savedDraft, interfaceLanguage: restoredLocale }
-          : emptyForm(restoredLocale),
-      );
+      setForm(restoredForm);
       setRoadmap(savedRoadmap);
-      setCompletion(readCompletion(window.localStorage));
+      setCompletion(savedCompletion);
+      setCalendarTasks(
+        savedRoadmap
+          ? syncRoadmapCalendarTasks(
+              savedCalendarTasks,
+              savedRoadmap,
+              restoredForm.deadline,
+              savedCompletion[savedRoadmap.id] ?? [],
+            )
+          : removeRoadmapCalendarTasks(savedCalendarTasks),
+      );
       setIsHydrated(true);
     });
 
@@ -108,13 +133,28 @@ export function QuandaApp({ demoMode }: QuandaAppProps) {
     }
   }, [completion, isHydrated]);
 
+  useEffect(() => {
+    if (isHydrated) {
+      writeCalendarTasks(window.localStorage, calendarTasks);
+    }
+  }, [calendarTasks, isHydrated]);
+
   const changeLanguage = (nextLocale: Locale) => {
     setLocale(nextLocale);
     trackEvent("language_changed", { language: nextLocale });
     const nextForm = { ...form, interfaceLanguage: nextLocale };
     setForm(nextForm);
     if (roadmap?.source === "demo") {
-      setRoadmap(createSampleRoadmap(nextForm));
+      const nextRoadmap = createSampleRoadmap(nextForm);
+      setRoadmap(nextRoadmap);
+      setCalendarTasks((current) =>
+        syncRoadmapCalendarTasks(
+          current,
+          nextRoadmap,
+          nextForm.deadline,
+          completion[nextRoadmap.id] ?? [],
+        ),
+      );
     }
   };
 
@@ -139,6 +179,7 @@ export function QuandaApp({ demoMode }: QuandaAppProps) {
     };
     setForm(nextForm);
     setRoadmap(null);
+    setCalendarTasks((current) => removeRoadmapCalendarTasks(current));
     setError(null);
     requestAnimationFrame(scrollToForm);
   };
@@ -148,6 +189,7 @@ export function QuandaApp({ demoMode }: QuandaAppProps) {
     setIsLoading(true);
     setError(null);
     setRoadmap(null);
+    setCalendarTasks((current) => removeRoadmapCalendarTasks(current));
     trackEvent("roadmap_generate_started", {
       language: request.interfaceLanguage,
       outputType: request.outputType,
@@ -208,6 +250,9 @@ export function QuandaApp({ demoMode }: QuandaAppProps) {
           ...current,
           [finalRoadmap.id]: [],
         }));
+        setCalendarTasks((current) =>
+          syncRoadmapCalendarTasks(current, finalRoadmap, request.deadline),
+        );
         trackEvent(
           finalRoadmap.source === "fallback"
             ? "roadmap_generate_fallback"
@@ -229,19 +274,56 @@ export function QuandaApp({ demoMode }: QuandaAppProps) {
 
   const toggleStage = (stageId: string) => {
     if (!roadmap) return;
+    const isCompleting = !completedStageIds.includes(stageId);
     setCompletion((current) => {
       const roadmapCompletion = current[roadmap.id] ?? [];
-      const isCompleting = !roadmapCompletion.includes(stageId);
       if (isCompleting) {
         trackEvent("stage_completed", { roadmapId: roadmap.id, stageId });
       }
       return {
         ...current,
         [roadmap.id]: isCompleting
-          ? [...roadmapCompletion, stageId]
+          ? [...new Set([...roadmapCompletion, stageId])]
           : roadmapCompletion.filter((id) => id !== stageId),
       };
     });
+    setCalendarTasks((current) =>
+      current.map((task) =>
+        task.source === "roadmap" &&
+        task.roadmapId === roadmap.id &&
+        task.stageId === stageId
+          ? { ...task, done: isCompleting }
+          : task,
+      ),
+    );
+  };
+
+  const toggleCalendarTask = (taskId: string) => {
+    const task = calendarTasks.find((candidate) => candidate.id === taskId);
+    if (!task) return;
+    const nextDone = !task.done;
+    setCalendarTasks((current) =>
+      current.map((candidate) =>
+        candidate.id === taskId ? { ...candidate, done: nextDone } : candidate,
+      ),
+    );
+
+    if (
+      task.source === "roadmap" &&
+      task.roadmapId &&
+      task.stageId &&
+      roadmap?.id === task.roadmapId
+    ) {
+      setCompletion((current) => {
+        const roadmapCompletion = current[task.roadmapId!] ?? [];
+        return {
+          ...current,
+          [task.roadmapId!]: nextDone
+            ? [...new Set([...roadmapCompletion, task.stageId!])]
+            : roadmapCompletion.filter((id) => id !== task.stageId),
+        };
+      });
+    }
   };
 
   return (
@@ -255,12 +337,7 @@ export function QuandaApp({ demoMode }: QuandaAppProps) {
           onLoadExample={loadExample}
         />
 
-        <section className="hero" aria-labelledby="hero-title">
-          <div className="route-motif" aria-hidden="true">
-            <span />
-            <span />
-            <span />
-          </div>
+        <section className={`hero hero-${locale}`} aria-labelledby="hero-title">
           <p className="eyebrow">{t.hero.eyebrow}</p>
           <h1 id="hero-title">
             {t.hero.titleLead} <em>{t.hero.titleAccent}</em>
@@ -275,7 +352,6 @@ export function QuandaApp({ demoMode }: QuandaAppProps) {
             <span>{t.hero.note}</span>
           </div>
         </section>
-
         <section className="how-section" id="how-it-works" aria-labelledby="how-title">
           <div className="section-heading">
             <p className="eyebrow">{t.how.eyebrow}</p>
@@ -334,6 +410,7 @@ export function QuandaApp({ demoMode }: QuandaAppProps) {
               setForm(emptyForm(locale));
               setRoadmap(null);
               setCompletion({});
+              setCalendarTasks((current) => removeRoadmapCalendarTasks(current));
               setError(null);
               writeLanguage(window.localStorage, locale);
               window.scrollTo({ top: 0, behavior: "smooth" });
@@ -344,6 +421,19 @@ export function QuandaApp({ demoMode }: QuandaAppProps) {
             tutorialLanguage={form.tutorialLanguage}
           />
         )}
+
+        <ProjectCalendar
+          locale={locale}
+          onAddTask={(task) => setCalendarTasks((current) => [...current, task])}
+          onDeleteTask={(taskId) =>
+            setCalendarTasks((current) =>
+              current.filter((task) => task.id !== taskId),
+            )
+          }
+          onToggleTask={toggleCalendarTask}
+          t={t}
+          tasks={calendarTasks}
+        />
 
         <footer>
           <a className="brand footer-brand" href="#top">QUANDA</a>

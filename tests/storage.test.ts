@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  readCalendarTasks,
   readCompletion,
   readDraft,
   readLanguage,
@@ -48,6 +49,21 @@ describe("local storage recovery", () => {
         invalid: ["stage-1", 2],
       }),
     );
+    storage.setItem(
+      STORAGE_KEYS.calendar,
+      JSON.stringify([
+        {
+          id: "task-1",
+          title: "Finish draft",
+          deadline: "2026-08-12",
+          category: "sage",
+          source: "manual",
+          done: false,
+          createdAt: "2026-08-05T00:00:00.000Z",
+        },
+        { id: "invalid-task" },
+      ]),
+    );
 
     expect(readLanguage(storage)).toBeNull();
     expect(readDraft(storage)).toBeNull();
@@ -55,5 +71,16 @@ describe("local storage recovery", () => {
     expect(readCompletion(storage)).toEqual({
       valid: ["stage-1", "stage-2"],
     });
+    expect(readCalendarTasks(storage)).toEqual([
+      {
+        id: "task-1",
+        title: "Finish draft",
+        deadline: "2026-08-12",
+        category: "sage",
+        source: "manual",
+        done: false,
+        createdAt: "2026-08-05T00:00:00.000Z",
+      },
+    ]);
   });
 });

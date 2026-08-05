@@ -80,9 +80,9 @@ export interface Translation {
     dependencies: string;
     tutorials: string;
     noTutorial: string;
-    curated: string;
-    searchSuggestion: string;
-    openTutorial: string;
+    youtubeVideo: string;
+    version: string;
+    watchYoutube: string;
     durationUnknown: string;
     languageNames: Record<"en" | "vi", string>;
     level: Record<"beginner" | "intermediate" | "advanced", string>;
@@ -103,6 +103,29 @@ export interface Translation {
     minutes: string;
     status: Record<"comfortable" | "tight" | "unrealistic", string>;
     priority: Record<"high" | "medium" | "low", string>;
+  };
+  calendar: {
+    eyebrow: string;
+    title: string;
+    intro: string;
+    ariaLabel: string;
+    controlsLabel: string;
+    previousMonth: string;
+    nextMonth: string;
+    today: string;
+    deadlineLegend: string;
+    dayPlan: string;
+    task: string;
+    taskPlaceholder: string;
+    deadline: string;
+    add: string;
+    emptyTasks: string;
+    clearDay: string;
+    of: string;
+    complete: string;
+    taskSingular: string;
+    taskPlural: string;
+    deleteTask: string;
   };
   loading: {
     eyebrow: string;
@@ -225,10 +248,10 @@ const en: Translation = {
     tasks: "Production tasks",
     dependencies: "Depends on",
     tutorials: "Tutorials",
-    noTutorial: "Curated tutorials will appear here after catalogue matching.",
-    curated: "Curated",
-    searchSuggestion: "Search suggestion",
-    openTutorial: "Open tutorial",
+    noTutorial: "No verified YouTube video matches this stage yet.",
+    youtubeVideo: "YouTube video",
+    version: "Software version",
+    watchYoutube: "Watch on YouTube",
     durationUnknown: "Self-paced",
     languageNames: { en: "English", vi: "Vietnamese" },
     level: {
@@ -264,6 +287,30 @@ const en: Translation = {
       low: "Low priority",
     },
   },
+  calendar: {
+    eyebrow: "Your project garden",
+    title: "Keep every deadline in view.",
+    intro:
+      "Select a day, add a task, and let the month hold the details. Everything is saved on this device.",
+    ariaLabel: "Project calendar",
+    controlsLabel: "Calendar controls",
+    previousMonth: "Previous month",
+    nextMonth: "Next month",
+    today: "Today",
+    deadlineLegend: "Task deadline",
+    dayPlan: "Day plan",
+    task: "Task",
+    taskPlaceholder: "What needs to get done?",
+    deadline: "Deadline",
+    add: "Add to calendar",
+    emptyTasks: "No tasks yet. Add a small, concrete next step above.",
+    clearDay: "A clear day — add something when you are ready.",
+    of: "of",
+    complete: "complete",
+    taskSingular: "task",
+    taskPlural: "tasks",
+    deleteTask: "Delete task",
+  },
   loading: {
     eyebrow: "Building your path",
     title: "Turning the brief into a practical sequence",
@@ -296,8 +343,8 @@ const vi: Translation = {
   },
   hero: {
     eyebrow: "Trợ lý thực tế cho dự án sáng tạo",
-    titleLead: "Biến thời hạn thành điều",
-    titleAccent: "có thể làm được.",
+    titleLead: "Biến deadline thành",
+    titleAccent: "điều khả thi.",
     tagline: "Từ đề bài dự án đến lộ trình học tập thực tế.",
     description:
       "QUANDA biến đề bài, kinh nghiệm và thời gian của bạn thành kế hoạch sản xuất tập trung—kèm nguồn học đáng tin cậy cho từng kỹ năng.",
@@ -318,7 +365,7 @@ const vi: Translation = {
       },
       {
         title: "Học, làm, hoàn thành",
-        description: "Theo tutorial tuyển chọn và đánh dấu từng đầu ra cụ thể.",
+        description: "Theo video hướng dẫn đã tuyển chọn và đánh dấu từng đầu ra cụ thể.",
       },
     ],
   },
@@ -338,7 +385,7 @@ const vi: Translation = {
     experiencePlaceholder: "Photoshop: trung cấp; Blender: mới bắt đầu",
     hoursPerDay: "Số giờ mỗi ngày học",
     daysPerWeek: "Số ngày học mỗi tuần",
-    tutorialLanguage: "Ngôn ngữ tutorial ưu tiên",
+    tutorialLanguage: "Ngôn ngữ video hướng dẫn ưu tiên",
     applications: "Ứng dụng bắt buộc",
     noApplication: "Không yêu cầu ứng dụng",
     outputType: "Loại sản phẩm mong muốn",
@@ -364,17 +411,17 @@ const vi: Translation = {
       { value: "either", label: "Cả hai" },
     ],
     outputOptions: [
-      { value: "video", label: "Video / Animation" },
-      { value: "3d", label: "Asset 3D" },
+      { value: "video", label: "Video / Hoạt hình" },
+      { value: "3d", label: "Mô hình 3D" },
       { value: "graphic", label: "Thiết kế đồ họa" },
-      { value: "uiux", label: "Prototype UI/UX" },
+      { value: "uiux", label: "Bản mẫu UI/UX" },
       { value: "audio", label: "Dự án âm thanh" },
       { value: "photo", label: "Nhiếp ảnh" },
       { value: "other", label: "Khác" },
     ],
     qualityOptions: [
       { value: "basic", label: "Bài nộp cơ bản" },
-      { value: "portfolio", label: "Sẵn sàng cho portfolio" },
+      { value: "portfolio", label: "Sẵn sàng cho hồ sơ năng lực" },
       { value: "unsure", label: "Chưa chắc" },
     ],
   },
@@ -392,11 +439,11 @@ const vi: Translation = {
     skill: "Kỹ năng cần học",
     tasks: "Nhiệm vụ sản xuất",
     dependencies: "Phụ thuộc",
-    tutorials: "Tutorial",
-    noTutorial: "Tutorial tuyển chọn sẽ xuất hiện sau khi ghép catalogue.",
-    curated: "Tuyển chọn",
-    searchSuggestion: "Gợi ý tìm kiếm",
-    openTutorial: "Mở tutorial",
+    tutorials: "Video hướng dẫn",
+    noTutorial: "Chưa có video YouTube đã xác minh phù hợp với giai đoạn này.",
+    youtubeVideo: "Video YouTube",
+    version: "Phiên bản phần mềm",
+    watchYoutube: "Xem trên YouTube",
     durationUnknown: "Tự học theo tiến độ",
     languageNames: { en: "Tiếng Anh", vi: "Tiếng Việt" },
     level: {
@@ -432,13 +479,37 @@ const vi: Translation = {
       low: "Ưu tiên thấp",
     },
   },
+  calendar: {
+    eyebrow: "Khu vườn dự án",
+    title: "Nhìn rõ mọi hạn chót.",
+    intro:
+      "Chọn một ngày, thêm công việc và để lịch tháng lưu giữ chi tiết. Mọi thứ được lưu trên thiết bị này.",
+    ariaLabel: "Lịch dự án",
+    controlsLabel: "Điều khiển lịch",
+    previousMonth: "Tháng trước",
+    nextMonth: "Tháng sau",
+    today: "Hôm nay",
+    deadlineLegend: "Hạn công việc",
+    dayPlan: "Kế hoạch trong ngày",
+    task: "Công việc",
+    taskPlaceholder: "Bạn cần hoàn thành việc gì?",
+    deadline: "Hạn chót",
+    add: "Thêm vào lịch",
+    emptyTasks: "Chưa có công việc. Hãy thêm một bước nhỏ và cụ thể ở trên.",
+    clearDay: "Ngày này còn trống — hãy thêm việc khi bạn sẵn sàng.",
+    of: "trên",
+    complete: "đã hoàn thành",
+    taskSingular: "công việc",
+    taskPlural: "công việc",
+    deleteTask: "Xóa công việc",
+  },
   loading: {
     eyebrow: "Đang xây dựng lộ trình",
     title: "Biến đề bài thành trình tự thực tế",
     statuses: [
       "Đang đọc đề bài",
       "Đang xác định các giai đoạn sản xuất",
-      "Đang ghép tutorial phù hợp",
+      "Đang ghép video hướng dẫn phù hợp",
       "Đang kiểm tra thời hạn",
     ],
   },

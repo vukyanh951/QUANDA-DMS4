@@ -38,6 +38,7 @@ CANDIDATE_TUTORIALS: ${JSON.stringify(compactTutorials)}
 NORMALIZED_INPUT: ${JSON.stringify(request)}
 
 Return one valid JSON object only. Do not use Markdown. All user-visible strings must be in ${languageName}. Never output a URL.
+${request.interfaceLanguage === "vi" ? "Write every generic heading, sentence, task, assumption, and warning in natural Vietnamese. Keep only brand and product names, file extensions, and established technical terms in English; never switch a whole phrase or sentence to English." : ""}
 
 Use this exact JSON shape:
 {
@@ -82,7 +83,8 @@ Validity rules:
 - Every stage must produce something observable; do not use a stage that only says "learn software".
 - Use positive, plausible minute estimates and keep learning separate from production.
 - The stage-time sum must approximately equal totalEstimatedMinutes.
-- Respect required applications when plausible, but do not force every known application into the plan.
+- When NORMALIZED_INPUT.requiredApplications is non-empty, use only those application IDs or null. Never substitute an unselected application.
+- When no application is required, use only IDs from SUPPORTED_APPLICATION_IDS when they are genuinely useful.
 - Explain an application's purpose in the stage goal or why text.
 - Dependencies may refer only to earlier stage IDs.
 - Choose tutorial IDs only from CANDIDATE_TUTORIALS and return at most three per stage.
@@ -100,6 +102,7 @@ export function buildRepairPrompt(
 Repair the following invalid QUANDA roadmap into one valid JSON object only.
 Do not use Markdown. Do not add URLs or tutorial IDs that are absent from the original output.
 Keep all user-visible text in ${language === "vi" ? "Vietnamese" : "English"}.
+${language === "vi" ? "Use natural Vietnamese throughout. Keep only brand and product names, file extensions, and established technical terms in English; never switch a whole phrase or sentence to English." : ""}
 The result must contain 4 to 8 stages and satisfy these validation errors:
 ${validationErrors}
 
